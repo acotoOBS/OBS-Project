@@ -1,0 +1,9 @@
+from enum import Enum
+
+class OrderStatus(str, Enum):
+
+    CREATED = "CREATED"
+    IN_TRANSIT = "IN_TRANSIT"
+    AT_SORTING_CENTER = "AT_SORTING_CENTER"
+    OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
+    DELIVERED = "DELIVERED"
