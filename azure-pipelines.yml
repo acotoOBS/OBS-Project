@@ -99,7 +99,9 @@ stages:
   - deployment: DeployAWS
     displayName: Deploy to AWS
 
-    environment: Susana-Deploy
+    environment:
+      name: Susana-production
+      resourceName: elasticbeanstalk
 
     strategy:
       runOnce:
