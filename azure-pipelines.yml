@@ -130,7 +130,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Create environment
-            condition: eq(variables['envExists'], 'false')
+            condition: eq(variables['CheckEnv'], 'false')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -141,7 +141,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Update environment
-            condition: eq(variables['envExists'], 'true')
+            condition: eq(variables['CheckEnv'], 'true')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -160,7 +160,7 @@ stages:
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].CNAME" --output text
             name: GetURL
-            
+
           - task: CmdLine@2
             displayName: Print Application URL
             inputs:
