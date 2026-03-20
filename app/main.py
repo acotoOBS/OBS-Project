@@ -9,7 +9,19 @@ app = FastAPI(title="Package Tracking API", version="1.0.0")
 
 @app.get("/")
 def root():
-    return {"message": "Package Tracking API", "docs": "/docs", "health": "/health"}
+    return {
+        "message": "Package Tracking API",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "service": "package-tracking-api"
+    }
 
 
 app.include_router(order_router, prefix="/orders")
