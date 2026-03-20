@@ -48,7 +48,7 @@ def update_order(order_id: int, order: OrderCreate, db: Session = Depends(get_db
 
     return updated
 
-@router.patch("/{order_id}/status", response_model=Order)
+@router.put("/{order_id}/status", response_model=Order)
 def update_order_status(
     order_id: int,
     status_update: OrderStatusUpdate,
