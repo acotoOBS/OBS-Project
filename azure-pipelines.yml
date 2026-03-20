@@ -229,17 +229,32 @@ stages:
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].EnvironmentName" --output text
 
+          - script: |
+              echo "##vso[task.setvariable variable=envExists]$(CheckEnv.AWSCLIOutput)"
+            displayName: Save env existence
+
+          - script: |
+              echo "envExists = $(envExists)"
+            displayName: Debug envExists
+
           - task: AWSCLI@1
             displayName: Create environment
-            condition: eq(variables['CheckEnv'], 'None')
+            condition: or(
+              eq(variables['envExists'], 'None'),
+              eq(variables['envExists'], '')
+            )
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: create-environment
               awsArguments: >
-                --application-name $(APPLICATION_NAME) --environment-name $(ENVIRONMENT_NAME) --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11" --version-label Susana-$(appVersion)
-
+                --application-name $(APPLICATION_NAME)
+                --environment-name $(ENVIRONMENT_NAME)
+                --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
+                --version-label Susana-$(appVersion)
+                --option-settings Namespace=aws:autoscaling:launchconfiguration,OptionName=IamInstanceProfile,Value=aws-elasticbeanstalk-ec2-role
+                
           - task: AWSCLI@1
             name: GetEnvStatus
             displayName: Get Environment Status
@@ -280,14 +295,18 @@ stages:
 
           - task: AWSCLI@1
             displayName: Update environment
-            condition: ne(variables['CheckEnv'], 'None')
+            condition: and(
+              ne(variables['envExists'], 'None'),
+              ne(variables['envExists'], '')
+              )
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: update-environment
               awsArguments: >
-                --environment-name $(ENVIRONMENT_NAME) --version-label Susana-$(appVersion)
+                --environment-name $(ENVIRONMENT_NAME)
+                --version-label Susana-$(appVersion)
 
           - task: AWSCLI@1
             displayName: Get Environment URL
