@@ -148,7 +148,6 @@ stages:
               awsSubCommand: describe-environments
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].EnvironmentName" --output text
-            continueOnError: true
 
           - task: AWSCLI@1
             displayName: Create environment
