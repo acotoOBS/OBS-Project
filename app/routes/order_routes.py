@@ -48,18 +48,13 @@ def update_order(order_id: int, order: OrderCreate, db: Session = Depends(get_db
 
     return updated
 
+
 @router.put("/{order_id}/status", response_model=Order)
 def update_order_status(
-    order_id: int,
-    status_update: OrderStatusUpdate,
-    db: Session = Depends(get_db)
+    order_id: int, status_update: OrderStatusUpdate, db: Session = Depends(get_db)
 ):
 
-    order = order_service.update_order_status(
-        db,
-        order_id,
-        status_update.status
-    )
+    order = order_service.update_order_status(db, order_id, status_update.status)
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")

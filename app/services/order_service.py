@@ -11,7 +11,7 @@ def create_order(db: Session, order: OrderCreate):
         tracking_number=generate_tracking_number(),
         customer_name=order.customer_name,
         destination=order.destination,
-        status=OrderStatus.CREATED.value
+        status=OrderStatus.CREATED.value,
     )
 
     db.add(db_order)
@@ -20,13 +20,16 @@ def create_order(db: Session, order: OrderCreate):
 
     return db_order
 
+
 def get_orders(db: Session):
 
     return db.query(Order).all()
 
+
 def get_order(db, order_id: int):
 
     return db.query(Order).filter(Order.id == order_id).first()
+
 
 def update_order_status(db, order_id: int, status):
 

@@ -112,33 +112,33 @@ stages:
           - task: AWSCLI@1
             displayName: Upload artifact to S3
             inputs:
-              awsCredentials: AWS
-              regionName: $(awsRegion)
+              awsCredentials: $(AWS_SC)
+              regionName: $(AWS_REGION)
               awsCommand: s3
               awsSubCommand: cp
-              awsArguments: "$(Pipeline.Workspace)/drop/$(artifactName)-$(Build.BuildId).zip s3://pruebas-devops1/Susana-$(Build.BuildId).zip"
+              awsArguments: "$(Pipeline.Workspace)/drop/$(artifactName)-$(Build.BuildId).zip s3://$(S3_BUCKET)/Susana-$(Build.BuildId).zip"
 
 # Create Application Version Deploy
           - task: AWSCLI@1
             displayName: Create application version
             inputs:
-              awsCredentials: AWS
-              regionName: us-east-1
+              awsCredentials: $(AWS_SC)
+              regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: create-application-version
               awsArguments: >
-                --application-name Pruebas
+                --application-name $(APPLICATION_NAME)
                 --version-label Susana-$(Build.BuildId)
-                --source-bundle S3Bucket=pruebas-devops1,S3Key=Susana-$(Build.BuildId).zip
+                --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(Build.BuildId).zip
 
 # Deploy to Elastic Beanstalk
           - task: AWSCLI@1
             displayName: Deploy application
             inputs:
-              awsCredentials: AWS
-              regionName: us-east-1
+              awsCredentials: $(AWS_SC)
+              regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: update-environment
               awsArguments: >
-                --environment-name Pruebas-env-2
+                --environment-name $(ENVIRONMENT_NAME)
                 --version-label Susana-$(Build.BuildId)

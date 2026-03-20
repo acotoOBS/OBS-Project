@@ -4,17 +4,12 @@ from app.database import Base, engine
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="Package Tracking API",
-    version="1.0.0"
-)
+app = FastAPI(title="Package Tracking API", version="1.0.0")
+
 
 @app.get("/")
 def root():
-    return {
-        "message": "Package Tracking API",
-        "docs": "/docs",
-        "health": "/health"
-    }
+    return {"message": "Package Tracking API", "docs": "/docs", "health": "/health"}
+
 
 app.include_router(order_router, prefix="/orders")
