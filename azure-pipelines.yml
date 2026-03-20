@@ -136,13 +136,33 @@ stages:
                 --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(Build.BuildId).zip
 
 # Deploy to Elastic Beanstalk
-          - task: AWSCLI@1
-            displayName: Deploy application
-            inputs:
-              awsCredentials: AWS
-              regionName: $(AWS_REGION)
-              awsCommand: elasticbeanstalk
-              awsSubCommand: update-environment
-              awsArguments: >
-                --environment-name $(ENVIRONMENT_NAME)
-                --version-label Susana-$(Build.BuildId)
+# Handle case where Elastic Beanstalk environment may not exist
+          - script: |
+
+              ENV_NAME=$(ENVIRONMENT_NAME)
+
+              echo "Checking if environment exists..."
+
+              EXISTS=$(aws elasticbeanstalk describe-environments \
+                --environment-names $ENV_NAME \
+                --query "Environments[0].EnvironmentName" \
+                --output text)
+
+              if [ "$EXISTS" = "None" ]; then
+                echo "Environment does not exist. Creating..."
+
+                aws elasticbeanstalk create-environment \
+                  --application-name $(APPLICATION_NAME) \
+                  --environment-name $ENV_NAME \
+                  --version-label Susana-$(Build.BuildId)
+
+              else
+                echo "Environment exists. Updating..."
+
+                aws elasticbeanstalk update-environment \
+                  --environment-name $ENV_NAME \
+                  --version-label Susana-$(Build.BuildId)
+
+              fi
+
+            displayName: Deploy Elastic Beanstalk (create or update)
