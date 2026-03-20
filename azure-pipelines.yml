@@ -225,19 +225,57 @@ stages:
                 --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(appVersion).zip
 
           - task: AWSCLI@1
-            displayName: Try create environment
+            displayName: Terminate environment if broken
             continueOnError: true
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
-              awsSubCommand: create-environment
+              awsSubCommand: terminate-environment
               awsArguments: >
-                --application-name $(APPLICATION_NAME)
                 --environment-name $(ENVIRONMENT_NAME)
-                --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
-                --version-label Susana-$(appVersion)
-                --option-settings Namespace=aws:autoscaling:launchconfiguration,OptionName=IamInstanceProfile,Value=aws-elasticbeanstalk-ec2-role
+
+                    - task: AWSCLI@1
+                      displayName: Try create environment
+                      continueOnError: true
+                      inputs:
+                        awsCredentials: AWS
+                        regionName: $(awsRegion)
+                        awsCommand: elasticbeanstalk
+                        awsSubCommand: create-environment
+                        awsArguments: >
+                          --application-name $(APPLICATION_NAME)
+                          --environment-name $(ENVIRONMENT_NAME)
+                          --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
+                          --version-label Susana-$(appVersion)
+                          --option-settings Namespace=aws:autoscaling:launchconfiguration,OptionName=IamInstanceProfile,Value=aws-elasticbeanstalk-ec2-role
+
+          - script: |
+              echo "Waiting for environment termination..."
+
+              for i in {1..30}
+              do
+                STATUS=$(aws elasticbeanstalk describe-environments \
+                  --region $(awsRegion) \
+                  --environment-names $(ENVIRONMENT_NAME) \
+                  --query "Environments[0].Status" \
+                  --output text 2>/dev/null || echo "None")
+
+                echo "Status: $STATUS"
+
+                if [ "$STATUS" = "None" ]; then
+                  echo "Environment fully terminated"
+                  exit 0
+                fi
+
+                sleep 10
+              done
+
+              echo "Timeout waiting for termination"
+              exit 1
+            displayName: Wait for termination
+            env:
+              AWS_DEFAULT_REGION: $(awsRegion)
 
           - task: AWSCLI@1
             displayName: Update environment
