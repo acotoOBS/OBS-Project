@@ -57,8 +57,7 @@ stages:
       displayName: Run code linting
 
 # Run tests
-    - script: |
-       - script: python -m pytest
+    - script: python -m pytest
       displayName: Run unit tests
 
 # Create artifact
