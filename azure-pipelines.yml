@@ -112,7 +112,7 @@ stages:
           - task: AWSCLI@1
             displayName: Upload artifact to S3
             inputs:
-              awsCredentials: $(AWS_SC)
+              awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: s3
               awsSubCommand: cp
@@ -122,7 +122,7 @@ stages:
           - task: AWSCLI@1
             displayName: Create application version
             inputs:
-              awsCredentials: $(AWS_SC)
+              awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: create-application-version
@@ -135,7 +135,7 @@ stages:
           - task: AWSCLI@1
             displayName: Deploy application
             inputs:
-              awsCredentials: $(AWS_SC)
+              awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: update-environment
