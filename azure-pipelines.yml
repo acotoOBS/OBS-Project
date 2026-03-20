@@ -175,3 +175,155 @@ stages:
         echo "Waiting for IAM propagation..."
         sleep 20
       displayName: Wait for IAM propagation
+
+- stage: Deploy
+  displayName: Continuous Deployment
+  dependsOn:
+  - Build
+  - Versioning
+  - SetupAWS
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+  variables:
+  - group: Susana Diez Gomez - Variables de Entorno
+  - name: appVersion
+    value: $[ stageDependencies.Versioning.VersionJob.outputs['SetVersion.appVersion'] ]
+
+  jobs:
+  - deployment: DeployAWS
+    displayName: Deploy to AWS
+    environment:
+      name: Susana-Deploy
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - download: current
+            artifact: drop
+
+          - task: AWSCLI@1
+            displayName: Upload artifact to S3
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: s3
+              awsSubCommand: cp
+              awsArguments: "$(Pipeline.Workspace)/drop/$(artifactName)-$(appVersion).zip s3://$(S3_BUCKET)/Susana-$(appVersion).zip"
+
+          - task: AWSCLI@1
+            displayName: Create application version
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: create-application-version
+              awsArguments: >
+                --application-name $(APPLICATION_NAME)
+                --version-label Susana-$(appVersion)
+                --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(appVersion).zip
+
+          - script: |
+              ENV_EXISTS=$(aws elasticbeanstalk describe-environments \
+                --environment-names $(ENVIRONMENT_NAME) \
+                --query "Environments[0].EnvironmentName" \
+                --output text)
+
+              echo "ENV_EXISTS=$ENV_EXISTS"
+              echo "##vso[task.setvariable variable=envExists]$ENV_EXISTS"
+            displayName: Check env existence (script)
+
+          - script: |
+              echo "envExists = $(envExists)"
+            displayName: Debug envExists
+
+          - task: AWSCLI@1
+            displayName: Create environment
+            condition: or(eq(variables['envExists'], 'None'), eq(variables['envExists'], ''))
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: create-environment
+              awsArguments: >
+                --application-name $(APPLICATION_NAME)
+                --environment-name $(ENVIRONMENT_NAME)
+                --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
+                --version-label Susana-$(appVersion)
+                --option-settings Namespace=aws:autoscaling:launchconfiguration,OptionName=IamInstanceProfile,Value=aws-elasticbeanstalk-ec2-role
+
+          - task: AWSCLI@1
+            displayName: Update environment
+            condition: and(ne(variables['envExists'], 'None'), ne(variables['envExists'], ''))
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: update-environment
+              awsArguments: >
+                --environment-name $(ENVIRONMENT_NAME)
+                --version-label Susana-$(appVersion)
+
+          - script: |
+              echo "Waiting for environment..."
+
+              for i in {1..30}
+              do
+                STATUS=$(aws elasticbeanstalk describe-environments \
+                  --environment-names $(ENVIRONMENT_NAME) \
+                  --query "Environments[0].Status" \
+                  --output text)
+
+                echo "Status: $STATUS"
+
+                if [ "$STATUS" = "Ready" ]; then
+                  echo "Environment ready"
+                  exit 0
+                fi
+
+                sleep 10
+              done
+
+              echo "Timeout waiting for environment"
+              exit 1
+            displayName: Wait for environment readiness
+
+          - script: |
+              HEALTH=$(aws elasticbeanstalk describe-environments \
+                --environment-names $(ENVIRONMENT_NAME) \
+                --query "Environments[0].Health" \
+                --output text)
+
+              echo "Health: $HEALTH"
+
+              if [ "$HEALTH" != "Green" ]; then
+                echo "Environment unhealthy"
+                exit 1
+              fi
+            displayName: Validate environment health
+
+          - task: AWSCLI@1
+            displayName: Get EB Events (Debug)
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: describe-events
+              awsArguments: >
+                --environment-name $(ENVIRONMENT_NAME)
+                --query "Events[?Severity=='ERROR'].[EventDate,Message]"
+                --output table
+
+          - task: AWSCLI@1
+            displayName: Get Environment URL
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: describe-environments
+              awsArguments: >
+                --environment-names $(ENVIRONMENT_NAME)
+                --query "Environments[0].CNAME"
+                --output text
+            name: GetURL
