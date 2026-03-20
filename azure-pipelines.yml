@@ -168,28 +168,6 @@ stages:
 
             displayName: Evaluate environment existence
 
-          - task: AWSCLI@1
-            displayName: Get and store solution stack
-            inputs:
-              awsCredentials: AWS
-              regionName: $(AWS_REGION)
-              awsCommand: elasticbeanstalk
-              awsSubCommand: list-available-solution-stacks
-              awsArguments: >
-                --query "SolutionStacks[?contains(@, 'Python 3.11')] | [0]"
-                --output text
-            name: GetStack
-
-          - script: |
-              STACK=$(aws elasticbeanstalk list-available-solution-stacks \
-                --query "SolutionStacks[?contains(@, 'Python 3.11')] | [0]" \
-                --output text)
-
-              echo "Stack seleccionado: $STACK"
-
-              echo "##vso[task.setvariable variable=solutionStack]$STACK"
-            displayName: Save solution stack
-
 # Create environment if NOT exists
 # Updated solution stack to a supported version (Python 3.11 / Amazon Linux 2)
           - task: AWSCLI@1
@@ -203,7 +181,7 @@ stages:
               awsArguments: >
                 --application-name $(APPLICATION_NAME)
                 --environment-name $(ENVIRONMENT_NAME)
-                --solution-stack-name "$(solutionStack)"
+                --solution-stack-name "64bit Amazon Linux 2 v3.7.0 running Python 3.11"
                 --version-label Susana-$(Build.BuildId)
 
 # Update environment if exists
