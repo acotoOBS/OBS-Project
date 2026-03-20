@@ -57,7 +57,6 @@ stages:
 
 - stage: Deploy
   displayName: Deploy Stage
-
   dependsOn: Build
 
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
@@ -68,8 +67,6 @@ stages:
   jobs:
 
   - deployment: DeployAWS
-    displayName: Deploy to AWS
-
     environment: production
 
     strategy:
@@ -86,17 +83,17 @@ stages:
             displayName: Upload artifact to S3
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: us-east-1
               awsCommand: s3
               awsSubCommand: cp
-              awsArguments: "$(Pipeline.Workspace)/drop/package-artifact.zip s3://$(S3_BUCKET)/Susana-$(Build.BuildId).zip"
+              awsArguments: "$(Pipeline.Workspace)/drop/package-artifact.zip s3://pruebas-devops1/Susana-$(Build.BuildId).zip"
 
           - task: AWSElasticBeanstalkDeployApplication@1
             displayName: Deploy to Elastic Beanstalk
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
-              applicationName: $(APPLICATION_NAME)
-              environmentName: $(ENVIRONMENT_NAME)
+              regionName: us-east-1
+              applicationName: Pruebas
+              environmentName: Pruebas-env-2
               applicationType: python
               deploymentBundle: "$(Pipeline.Workspace)/drop/package-artifact.zip"
