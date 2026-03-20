@@ -257,7 +257,7 @@ stages:
 
           - script: sleep 20
             displayName: Wait before retry
-            condition: failed('CreateEnvAttempt1')
+            condition: failed(CreateEnvAttempt1)
 
           - task: AWSCLI@1
             displayName: Create environment attempt 2
