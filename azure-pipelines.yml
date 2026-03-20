@@ -149,8 +149,8 @@ stages:
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].EnvironmentName" --output text
 
-          - script:
-              echo "$CheckEnv"
+          - script: |
+              echo "Environment exists: $(CheckEnv.AWSCLIOutput)"
 
           - task: AWSCLI@1
             displayName: Create environment
@@ -162,6 +162,32 @@ stages:
               awsSubCommand: create-environment
               awsArguments: >
                 --application-name $(APPLICATION_NAME) --environment-name $(ENVIRONMENT_NAME) --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11" --version-label Susana-$(appVersion)
+
+          - task: AWSCLI@1
+            name: GetEnvStatus
+            displayName: Get Environment Status
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: describe-environments
+              awsArguments: >
+                --environment-names $(ENVIRONMENT_NAME)
+                --query "Environments[0].Status"
+                --output text
+
+          - task: AWSCLI@1
+            name: GetEnvHealth
+            displayName: Get Environment Health
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: describe-environments
+              awsArguments: >
+                --environment-names $(ENVIRONMENT_NAME)
+                --query "Environments[0].Health"
+                --output text
 
           - task: AWSCLI@1
             displayName: Update environment
@@ -184,10 +210,3 @@ stages:
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].CNAME" --output text
             name: GetURL
-
-          - task: CmdLine@2
-            displayName: Print Application URL
-            inputs:
-              script: |
-                echo "URL de la aplicación:"
-                echo "http://$(GetURL.AWSCLIOutput)"
