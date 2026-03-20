@@ -163,7 +163,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Create environment if update failed
-            condition: failed('TryUpdate')
+            condition: eq(variables['TryUpdate.Status'], 'Failed')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
