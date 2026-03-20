@@ -169,7 +169,7 @@ stages:
             displayName: Evaluate environment existence
 
           - task: AWSCLI@1
-            displayName: Get available solution stacks
+            displayName: Get and store solution stack
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -181,8 +181,13 @@ stages:
             name: GetStack
 
           - script: |
-              echo "Stack seleccionado: $(GetStack.AWSCLIOutput)"
-              echo "##vso[task.setvariable variable=solutionStack]$(GetStack.AWSCLIOutput)"
+              STACK=$(aws elasticbeanstalk list-available-solution-stacks \
+                --query "SolutionStacks[?contains(@, 'Python 3.11')] | [0]" \
+                --output text)
+
+              echo "Stack seleccionado: $STACK"
+
+              echo "##vso[task.setvariable variable=solutionStack]$STACK"
             displayName: Save solution stack
 
 # Create environment if NOT exists
