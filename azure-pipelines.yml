@@ -99,7 +99,7 @@ stages:
   - deployment: DeployAWS
     displayName: Deploy to AWS
 
-    environment: production
+    environment: Susana-Deploy
 
     strategy:
       runOnce:
