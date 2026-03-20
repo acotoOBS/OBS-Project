@@ -42,13 +42,13 @@ stages:
         key: 'python | "$(Agent.OS)" | requirements.txt'
         restoreKeys: |
           python | "$(Agent.OS)"
-        path: ~/.cache/pip
+        path: $(Pipeline.Workspace)/.pip
       displayName: Cache pip dependencies
 
 # Install dependencies
     - script: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install --cache-dir $(Pipeline.Workspace)/.pip -r requirements.txt
       displayName: Install dependencies
 
 # Install lint tool
