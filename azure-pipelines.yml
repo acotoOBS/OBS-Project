@@ -100,7 +100,7 @@ stages:
     displayName: Deploy to AWS
 
     environment:
-      name: Susana-production
+      name: Susana-Deploy
       resourceName: elasticbeanstalk
 
     strategy:
