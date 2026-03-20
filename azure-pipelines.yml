@@ -138,7 +138,8 @@ stages:
 # Check if environment exists
           - task: AWSCLI@1
             name: CheckEnv
-            displayName: Check and set environment existence
+            displayName: Check if environment exists
+            continueOnError: true
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -146,15 +147,12 @@ stages:
               awsSubCommand: describe-environments
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME)
-                --query "Environments[0].EnvironmentName"
-                --output text
-            continueOnError: true
 
 # Create environment if NOT exists
 # Updated solution stack to a supported version (Python 3.11 / Amazon Linux 2)
           - task: AWSCLI@1
             displayName: Create environment
-            condition: failed('CheckEnv')
+            condition: failed()
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -169,7 +167,7 @@ stages:
 # Update environment if exists
           - task: AWSCLI@1
             displayName: Update environment
-            condition: succeeded('CheckEnv')
+            condition: succeeded()
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
