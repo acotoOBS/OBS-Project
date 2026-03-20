@@ -139,7 +139,6 @@ stages:
           - task: AWSCLI@1
             name: CheckEnv
             displayName: Check if environment exists
-            continueOnError: true
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -147,11 +146,22 @@ stages:
               awsSubCommand: describe-environments
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME)
+                --query "Environments[0].EnvironmentName"
+                --output text
+
+# Save Result
+          - script: |
+              if [ "$(CheckEnv.stdout)" = "None" ]; then
+                echo "##vso[task.setvariable variable=envExists]false"
+              else
+                echo "##vso[task.setvariable variable=envExists]true"
+              fi
+            displayName: Set environment existence flag
 
 # Create environment if NOT exists
           - task: AWSCLI@1
             displayName: Create environment
-            condition: failed('CheckEnv')
+            condition: eq(variables['envExists'], 'false')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -166,7 +176,7 @@ stages:
 # Update environment if exists
           - task: AWSCLI@1
             displayName: Update environment
-            condition: succeeded('CheckEnv')
+            condition: eq(variables['envExists'], 'true')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
