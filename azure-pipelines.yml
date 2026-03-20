@@ -31,12 +31,12 @@ stages:
         echo "Generated version: $VERSION"
       name: SetVersion
 
-- - stage: Build
-    dependsOn: Versioning
-    variables:
-      appVersion: $[ stageDependencies.Versioning.VersionJob.outputs['SetVersion.appVersion'] ]
-    displayName: Continuous Integration
-    jobs:
+- stage: Build
+  dependsOn: Versioning
+  variables:
+    appVersion: $[ stageDependencies.Versioning.VersionJob.outputs['SetVersion.appVersion'] ]
+  displayName: Continuous Integration
+  jobs:
   - job: BuildJob
     displayName: Build and Test Application
     pool:
