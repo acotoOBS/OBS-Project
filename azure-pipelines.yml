@@ -148,10 +148,24 @@ stages:
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME)
 
+          # Update environment if exists
+          - task: AWSCLI@1
+            name: TryUpdate
+            displayName: Try update environment
+            continueOnError: true
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: update-environment
+              awsArguments: >
+                --environment-name $(ENVIRONMENT_NAME)
+                --version-label Susana-$(Build.BuildId)
+
 # Create environment if NOT exists
 # Updated solution stack to a supported version (Python 3.11 / Amazon Linux 2)
           - task: AWSCLI@1
-            displayName: Create environment
+            displayName: Create environment if update failed
             condition: failed()
             inputs:
               awsCredentials: AWS
@@ -162,19 +176,6 @@ stages:
                 --application-name $(APPLICATION_NAME)
                 --environment-name $(ENVIRONMENT_NAME)
                 --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
-                --version-label Susana-$(Build.BuildId)
-
-# Update environment if exists
-          - task: AWSCLI@1
-            displayName: Update environment
-            condition: succeeded()
-            inputs:
-              awsCredentials: AWS
-              regionName: $(AWS_REGION)
-              awsCommand: elasticbeanstalk
-              awsSubCommand: update-environment
-              awsArguments: >
-                --environment-name $(ENVIRONMENT_NAME)
                 --version-label Susana-$(Build.BuildId)
 
           - task: AWSCLI@1
