@@ -139,7 +139,6 @@ stages:
           - task: AWSCLI@1
             name: CheckEnv
             displayName: Check if environment exists
-            continueOnError: true
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
