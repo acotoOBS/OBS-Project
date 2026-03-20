@@ -150,29 +150,11 @@ stages:
                 --output text
             continueOnError: true
 
-          - script: |
-              echo "Checking environment existence..."
-
-              RESULT=$(aws elasticbeanstalk describe-environments \
-                --environment-names $(ENVIRONMENT_NAME) \
-                --query "Environments[0].EnvironmentName" \
-                --output text)
-
-              echo "Result: $RESULT"
-
-              if [ "$RESULT" = "None" ] || [ -z "$RESULT" ]; then
-                echo "##vso[task.setvariable variable=envExists]false"
-              else
-                echo "##vso[task.setvariable variable=envExists]true"
-              fi
-
-            displayName: Evaluate environment existence
-
 # Create environment if NOT exists
 # Updated solution stack to a supported version (Python 3.11 / Amazon Linux 2)
           - task: AWSCLI@1
             displayName: Create environment
-            condition: eq(variables['envExists'], 'false')
+            condition: failed('CheckEnv')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -187,7 +169,7 @@ stages:
 # Update environment if exists
           - task: AWSCLI@1
             displayName: Update environment
-            condition: eq(variables['envExists'], 'true')
+            condition: succeeded('CheckEnv')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -208,6 +190,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Get Environment URL
+            continueOnError: true
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
