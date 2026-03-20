@@ -152,7 +152,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Create environment
-            condition: eq(variables['CheckEnv'], 'false')
+            condition: eq(variables['CheckEnv'], 'None')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -163,7 +163,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Update environment
-            condition: eq(variables['CheckEnv'], 'true')
+            condition: ne(variables['CheckEnv'], 'true')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
