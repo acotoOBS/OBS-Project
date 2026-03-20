@@ -242,9 +242,34 @@ stages:
               echo "envExists = $(envExists)"
             displayName: Debug envExists
 
+          - script: |
+              echo "Waiting for environment to be fully terminated..."
+
+              for i in {1..30}
+              do
+                STATUS=$(aws elasticbeanstalk describe-environments \
+                  --region $(awsRegion) \
+                  --environment-names $(ENVIRONMENT_NAME) \
+                  --query "Environments[0].Status" \
+                  --output text 2>/dev/null || echo "None")
+
+                echo "Current status: $STATUS"
+
+                if [ "$STATUS" = "None" ]; then
+                  echo "Environment fully removed"
+                  exit 0
+                fi
+
+                sleep 10
+              done
+
+              echo "Timeout waiting for termination"
+              exit 1
+            displayName: Wait for environment deletion
+
           - task: AWSCLI@1
             displayName: Create environment
-            condition: or(eq(variables['envStatus'], 'None'), eq(variables['envStatus'], 'Terminated'))
+            condition: eq(variables['envStatus'], 'None')
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
@@ -259,7 +284,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Update environment
-            condition: and(ne(variables['envStatus'], 'None'), ne(variables['envStatus'], 'Terminated'))
+            condition: ne(variables['envStatus'], 'None')
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
