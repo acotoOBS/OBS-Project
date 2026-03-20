@@ -138,7 +138,7 @@ stages:
 # Check if environment exists
           - task: AWSCLI@1
             name: CheckEnv
-            displayName: Check if environment exists
+            displayName: Check and set environment existence
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
@@ -148,17 +148,25 @@ stages:
                 --environment-names $(ENVIRONMENT_NAME)
                 --query "Environments[0].EnvironmentName"
                 --output text
+            continueOnError: true
 
-# Save Result
           - script: |
-              echo "Raw output: $(CheckEnv.AWSCLIOutput)"
+              echo "Checking environment existence..."
 
-              if [ "$(CheckEnv.AWSCLIOutput)" = "None" ]; then
+              RESULT=$(aws elasticbeanstalk describe-environments \
+                --environment-names $(ENVIRONMENT_NAME) \
+                --query "Environments[0].EnvironmentName" \
+                --output text)
+
+              echo "Result: $RESULT"
+
+              if [ "$RESULT" = "None" ] || [ -z "$RESULT" ]; then
                 echo "##vso[task.setvariable variable=envExists]false"
               else
                 echo "##vso[task.setvariable variable=envExists]true"
               fi
-            displayName: Set environment existence flag
+
+            displayName: Evaluate environment existence
 
 # Create environment if NOT exists
           - task: AWSCLI@1
