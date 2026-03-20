@@ -150,6 +150,25 @@ stages:
                 --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].EnvironmentName" --output text
             continueOnError: true
 
+          - task: CmdLine@2
+            displayName: Evaluate environment existence
+            inputs:
+              script: |
+                echo "Checking environment existence..."
+
+                RESULT=$(aws elasticbeanstalk describe-environments \
+                  --environment-names $(ENVIRONMENT_NAME) \
+                  --query "Environments[0].EnvironmentName" \
+                  --output text)
+
+                echo "Result: $RESULT"
+
+                if [ "$RESULT" = "None" ] || [ -z "$RESULT" ]; then
+                  echo "##vso[task.setvariable variable=envExists]false"
+                else
+                  echo "##vso[task.setvariable variable=envExists]true"
+                fi
+
           - task: AWSCLI@1
             displayName: Create environment
             condition: eq(variables['CheckEnv'], 'false')
