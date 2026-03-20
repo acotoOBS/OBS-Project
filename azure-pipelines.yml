@@ -135,25 +135,38 @@ stages:
                 --version-label Susana-$(Build.BuildId)
                 --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(Build.BuildId).zip
 
-# Deploy to Elastic Beanstalk
-# Handle case where Elastic Beanstalk environment may not exist
+# Validate if Environment Exists
           - task: AWSCLI@1
             displayName: Deploy Elastic Beanstalk (create or update)
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: describe-environments
+              awsArguments: >
+                --environment-names $(ENVIRONMENT_NAME)
+
+            continueOnError: true
+
+# Deploy to Elastic Beanstalk
+# Handle case where Elastic Beanstalk environment may not exist
+          - task: AWSCLI@1
+            displayName: Create or Update Environment
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
               awsCommand: custom
-              awsSubCommand: ''
+              awsSubCommand: script
               awsArguments: |
                 bash -c '
-                echo "Checking if environment exists..."
+                echo "Checking environment status..."
 
-                EXISTS=$(aws elasticbeanstalk describe-environments \
+                STATUS=$(aws elasticbeanstalk describe-environments \
                   --environment-names $(ENVIRONMENT_NAME) \
-                  --query "Environments[0].EnvironmentName" \
+                  --query "Environments[0].Status" \
                   --output text)
 
-                if [ "$EXISTS" = "None" ]; then
+                if [ "$STATUS" = "None" ] || [ -z "$STATUS" ]; then
                   echo "Environment does not exist. Creating..."
 
                   aws elasticbeanstalk create-environment \
@@ -168,32 +181,4 @@ stages:
                     --environment-name $(ENVIRONMENT_NAME) \
                     --version-label Susana-$(Build.BuildId)
                 fi
-                '- script: |
-
-                        ENV_NAME=$(ENVIRONMENT_NAME)
-
-                        echo "Checking if environment exists..."
-
-                        EXISTS=$(aws elasticbeanstalk describe-environments \
-                          --environment-names $ENV_NAME \
-                          --query "Environments[0].EnvironmentName" \
-                          --output text)
-
-                        if [ "$EXISTS" = "None" ]; then
-                          echo "Environment does not exist. Creating..."
-
-                          aws elasticbeanstalk create-environment \
-                            --application-name $(APPLICATION_NAME) \
-                            --environment-name $ENV_NAME \
-                            --version-label Susana-$(Build.BuildId)
-
-                        else
-                          echo "Environment exists. Updating..."
-
-                          aws elasticbeanstalk update-environment \
-                            --environment-name $ENV_NAME \
-                            --version-label Susana-$(Build.BuildId)
-
-                        fi
-
-                      displayName: Deploy Elastic Beanstalk (create or update)
+                '
