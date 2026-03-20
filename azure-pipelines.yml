@@ -151,7 +151,9 @@ stages:
 
 # Save Result
           - script: |
-              if [ "$(CheckEnv.stdout)" = "None" ]; then
+              echo "Raw output: $(CheckEnv.AWSCLIOutput)"
+
+              if [ "$(CheckEnv.AWSCLIOutput)" = "None" ]; then
                 echo "##vso[task.setvariable variable=envExists]false"
               else
                 echo "##vso[task.setvariable variable=envExists]true"
