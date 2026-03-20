@@ -198,6 +198,15 @@ stages:
                 --version-label Susana-$(Build.BuildId)
 
           - task: AWSCLI@1
+            displayName: Wait for environment to be ready
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: wait
+              awsArguments: environment-updated --environment-names $(ENVIRONMENT_NAME)
+
+          - task: AWSCLI@1
             displayName: Get Environment URL
             inputs:
               awsCredentials: AWS
