@@ -97,6 +97,84 @@ stages:
     - publish: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(appVersion).zip
       artifact: drop
 
+- stage: SetupAWS
+  displayName: Setup AWS IAM (Instance Profile)
+  jobs:
+  - job: SetupIAM
+    displayName: Create IAM Role and Instance Profile
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: AWSCLI@1
+      displayName: Check IAM Access
+      inputs:
+        awsCredentials: AWS
+        regionName: $(AWS_REGION)
+        awsCommand: iam
+        awsSubCommand: list-roles
+
+    - task: AWSCLI@1
+      displayName: Create IAM Role
+      inputs:
+        awsCredentials: AWS
+        regionName: $(AWS_REGION)
+        awsCommand: iam
+        awsSubCommand: create-role
+        awsArguments: >
+          --role-name aws-elasticbeanstalk-ec2-role
+          --assume-role-policy-document '{
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {"Service": "ec2.amazonaws.com"},
+                "Action": "sts:AssumeRole"
+              }
+            ]
+          }'
+      continueOnError: true
+
+    - task: AWSCLI@1
+      displayName: Attach WebTier Policy
+      inputs:
+        awsCredentials: AWS
+        regionName: $(AWS_REGION)
+        awsCommand: iam
+        awsSubCommand: attach-role-policy
+        awsArguments: >
+          --role-name aws-elasticbeanstalk-ec2-role
+          --policy-arn arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier
+      continueOnError: true
+
+    - task: AWSCLI@1
+      displayName: Create Instance Profile
+      inputs:
+        awsCredentials: AWS
+        regionName: $(AWS_REGION)
+        awsCommand: iam
+        awsSubCommand: create-instance-profile
+        awsArguments: >
+          --instance-profile-name aws-elasticbeanstalk-ec2-role
+      continueOnError: true
+
+    - task: AWSCLI@1
+      displayName: Add Role to Instance Profile
+      inputs:
+        awsCredentials: AWS
+        regionName: $(AWS_REGION)
+        awsCommand: iam
+        awsSubCommand: add-role-to-instance-profile
+        awsArguments: >
+          --instance-profile-name aws-elasticbeanstalk-ec2-role
+          --role-name aws-elasticbeanstalk-ec2-role
+      continueOnError: true
+
+    - script: |
+        echo "Waiting for IAM propagation..."
+        sleep 20
+      displayName: Wait for IAM propagation
+
 - stage: Deploy
   displayName: Continuous Deployment
   dependsOn:
