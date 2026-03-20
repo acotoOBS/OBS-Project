@@ -225,10 +225,15 @@ stages:
                 --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(appVersion).zip
 
           - script: |
+              set -e
+
               ENV_EXISTS=$(aws elasticbeanstalk describe-environments \
+                --region $(awsRegion) \
                 --environment-names $(ENVIRONMENT_NAME) \
                 --query "Environments[0].EnvironmentName" \
-                --output text)
+                --output text 2>/dev/null || echo "None")
+
+              ENV_EXISTS=$(echo "$ENV_EXISTS" | tr -d '\r\n')
 
               echo "ENV_EXISTS=$ENV_EXISTS"
               echo "##vso[task.setvariable variable=envExists]$ENV_EXISTS"
