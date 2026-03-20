@@ -4,3 +4,4 @@ pydantic
 pytest
 sqlalchemy
 flake8
+httpx
