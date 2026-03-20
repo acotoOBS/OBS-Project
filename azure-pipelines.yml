@@ -196,3 +196,21 @@ stages:
               awsArguments: >
                 --environment-name $(ENVIRONMENT_NAME)
                 --version-label Susana-$(Build.BuildId)
+
+          - task: AWSCLI@1
+            displayName: Get Environment URL
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: describe-environments
+              awsArguments: >
+                --environment-names $(ENVIRONMENT_NAME)
+                --query "Environments[0].CNAME"
+                --output text
+            name: GetURL    
+
+          - script: |
+              echo "URL de la aplicación:"
+              echo "http://$(GetURL.AWSCLIOutput)"
+            displayName: Print Application URL
