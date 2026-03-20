@@ -94,7 +94,7 @@ stages:
         archiveFile: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(appVersion).zip
         replaceExistingArchive: true
 
-    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(Build.BuildId).zip
+    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(appVersion).zip
       artifact: drop
 
 - stage: Deploy
