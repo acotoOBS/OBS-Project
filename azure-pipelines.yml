@@ -98,6 +98,7 @@ stages:
       artifact: drop
 
 - stage: SetupAWS
+  dependsOn: Build
   displayName: Setup AWS IAM (Instance Profile)
   jobs:
   - job: SetupIAM
@@ -110,7 +111,7 @@ stages:
       displayName: Check IAM Access
       inputs:
         awsCredentials: AWS
-        regionName: $(AWS_REGION)
+        regionName: $(awsRegion)
         awsCommand: iam
         awsSubCommand: list-roles
 
@@ -118,7 +119,7 @@ stages:
       displayName: Create IAM Role
       inputs:
         awsCredentials: AWS
-        regionName: $(AWS_REGION)
+        regionName: $(awsRegion)
         awsCommand: iam
         awsSubCommand: create-role
         awsArguments: >
@@ -139,7 +140,7 @@ stages:
       displayName: Attach WebTier Policy
       inputs:
         awsCredentials: AWS
-        regionName: $(AWS_REGION)
+        regionName: $(awsRegion)
         awsCommand: iam
         awsSubCommand: attach-role-policy
         awsArguments: >
@@ -151,7 +152,7 @@ stages:
       displayName: Create Instance Profile
       inputs:
         awsCredentials: AWS
-        regionName: $(AWS_REGION)
+        regionName: $(awsRegion)
         awsCommand: iam
         awsSubCommand: create-instance-profile
         awsArguments: >
@@ -162,7 +163,7 @@ stages:
       displayName: Add Role to Instance Profile
       inputs:
         awsCredentials: AWS
-        regionName: $(AWS_REGION)
+        regionName: $(awsRegion)
         awsCommand: iam
         awsSubCommand: add-role-to-instance-profile
         awsArguments: >
@@ -180,6 +181,7 @@ stages:
   dependsOn:
   - Build
   - Versioning
+  - SetupAWS
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   variables:
   - group: Susana Diez Gomez - Variables de Entorno
@@ -201,7 +203,7 @@ stages:
             displayName: Upload artifact to S3
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: s3
               awsSubCommand: cp
               awsArguments: "$(Pipeline.Workspace)/drop/$(artifactName)-$(appVersion).zip s3://$(S3_BUCKET)/Susana-$(appVersion).zip"
@@ -210,7 +212,7 @@ stages:
             displayName: Create application version
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: create-application-version
               awsArguments: >
@@ -221,7 +223,7 @@ stages:
             displayName: Check and set environment existence
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: describe-environments
               awsArguments: >
@@ -232,7 +234,7 @@ stages:
             condition: eq(variables['CheckEnv'], 'None')
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: create-environment
               awsArguments: >
@@ -243,7 +245,7 @@ stages:
             displayName: Get Environment Status
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: describe-environments
               awsArguments: >
@@ -256,7 +258,7 @@ stages:
             displayName: Get Environment Health
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: describe-environments
               awsArguments: >
@@ -268,7 +270,7 @@ stages:
             displayName: Get EB Events (Debug)
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: describe-events
               awsArguments: >
@@ -281,7 +283,7 @@ stages:
             condition: ne(variables['CheckEnv'], 'None')
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: update-environment
               awsArguments: >
@@ -291,7 +293,7 @@ stages:
             displayName: Get Environment URL
             inputs:
               awsCredentials: AWS
-              regionName: $(AWS_REGION)
+              regionName: $(awsRegion)
               awsCommand: elasticbeanstalk
               awsSubCommand: describe-environments
               awsArguments: >
