@@ -193,6 +193,18 @@ stages:
                 --output text
 
           - task: AWSCLI@1
+            displayName: Get EB Events (Debug)
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: describe-events
+              awsArguments: >
+                --environment-name $(ENVIRONMENT_NAME)
+                --query "Events[?Severity=='ERROR'].[EventDate,Message]"
+                --output table
+
+          - task: AWSCLI@1
             displayName: Update environment
             condition: ne(variables['CheckEnv'], 'None')
             inputs:
