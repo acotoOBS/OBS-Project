@@ -239,10 +239,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Create environment
-            condition: or(
-              eq(variables['envExists'], 'None'),
-              eq(variables['envExists'], '')
-            )
+            condition: or(eq(variables['envExists'], 'None'), eq(variables['envExists'], ''))
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
@@ -295,10 +292,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Update environment
-            condition: and(
-              ne(variables['envExists'], 'None'),
-              ne(variables['envExists'], '')
-              )
+            condition: and(ne(variables['envExists'], 'None'), ne(variables['envExists'], ''))
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
