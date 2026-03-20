@@ -147,7 +147,7 @@ stages:
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME)
 
-          # Update environment if exists
+# Update environment if exists
           - task: AWSCLI@1
             name: TryUpdate
             displayName: Try update environment
@@ -161,11 +161,9 @@ stages:
                 --environment-name $(ENVIRONMENT_NAME)
                 --version-label Susana-$(Build.BuildId)
 
-# Create environment if NOT exists
-# Updated solution stack to a supported version (Python 3.11 / Amazon Linux 2)
           - task: AWSCLI@1
             displayName: Create environment if update failed
-            condition: failed()
+            condition: failed('TryUpdate')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
