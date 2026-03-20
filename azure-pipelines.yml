@@ -152,25 +152,25 @@ stages:
 
           - task: AWSCLI@1
             displayName: Create environment
-            condition: eq(variables['CheckEnv'], 'None')
+            condition: eq(variables['CheckEnv'], 'false')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: create-environment
               awsArguments: >
-                --application-name $(APPLICATION_NAME) --environment-name $(ENVIRONMENT_NAME) --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11" --version-label Susana-$(Build.BuildId)
+                --application-name $(APPLICATION_NAME) --environment-name $(ENVIRONMENT_NAME) --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11" --version-label Susana-$(appVersion)
 
           - task: AWSCLI@1
             displayName: Update environment
-            condition: ne(variables['CheckEnv'], 'None')
+            condition: eq(variables['CheckEnv'], 'true')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: update-environment
               awsArguments: >
-                --environment-name $(ENVIRONMENT_NAME) --version-label Susana-$(Build.BuildId)
+                --environment-name $(ENVIRONMENT_NAME) --version-label Susana-$(appVersion)
 
           - task: AWSCLI@1
             displayName: Get Environment URL
