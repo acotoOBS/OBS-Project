@@ -1,0 +1,102 @@
+trigger:
+- main
+
+variables:
+
+  pythonVersion: '3.11'
+  artifactName: 'package-artifact'
+
+stages:
+
+# =========================
+# STAGE 1 - BUILD / CI
+# =========================
+
+- stage: Build
+  displayName: Build Stage
+
+  jobs:
+
+  - job: BuildJob
+    displayName: Build Python Application
+
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: $(pythonVersion)
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: Install dependencies
+
+    - script: |
+        pytest
+      displayName: Run tests
+
+    - task: ArchiveFiles@2
+      displayName: Create artifact zip
+      inputs:
+        rootFolderOrFile: $(Build.SourcesDirectory)
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(artifactName).zip
+        replaceExistingArchive: true
+
+    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName).zip
+      artifact: drop
+
+
+# =========================
+# STAGE 2 - DEPLOY / CD
+# =========================
+
+- stage: Deploy
+  displayName: Deploy Stage
+
+  dependsOn: Build
+
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+  variables:
+  - group: Susana Diez Gomez - Variables
+
+  jobs:
+
+  - deployment: DeployAWS
+    displayName: Deploy to AWS
+
+    environment: production
+
+    strategy:
+      runOnce:
+
+        deploy:
+
+          steps:
+
+          - download: current
+            artifact: drop
+
+          - task: AWSCLI@1
+            displayName: Upload artifact to S3
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              awsCommand: s3
+              awsSubCommand: cp
+              awsArguments: "$(Pipeline.Workspace)/drop/package-artifact.zip s3://$(S3_BUCKET)/Susana-$(Build.BuildId).zip"
+
+          - task: AWSElasticBeanstalkDeployApplication@1
+            displayName: Deploy to Elastic Beanstalk
+            inputs:
+              awsCredentials: AWS
+              regionName: $(AWS_REGION)
+              applicationName: $(APPLICATION_NAME)
+              environmentName: $(ENVIRONMENT_NAME)
+              applicationType: python
+              deploymentBundle: "$(Pipeline.Workspace)/drop/package-artifact.zip"
