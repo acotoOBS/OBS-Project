@@ -1,42 +1,32 @@
 trigger:
-- main
-
+  branches:
+    include:
+    - main
 variables:
-
-  pythonVersion: '3.11'
-  artifactName: 'package-artifact'
-  awsRegion: 'us-east-1'
-
+- name: pythonVersion
+  value: '3.11'
+- name: artifactName
+  value: 'package-artifact'
+- name: awsRegion
+  value: 'us-east-1'
 stages:
-
-# =========================
-# STAGE 1 - CI / BUILD
-# =========================
-
 - stage: Build
   displayName: Continuous Integration
-
   jobs:
-
   - job: BuildJob
     displayName: Build and Test Application
-
     pool:
       vmImage: ubuntu-latest
-
     steps:
-
     - task: UsePythonVersion@0
       inputs:
         versionSpec: $(pythonVersion)
       displayName: Use Python $(pythonVersion)
-
-# Create cache directory
-    - script: |
-        mkdir -p ~/.cache/pip
+    - task: CmdLine@2
       displayName: Create pip cache directory
-
-# Cache pip dependencies
+      inputs:
+        script: |
+          mkdir -p ~/.cache/pip
     - task: Cache@2
       inputs:
         key: 'python | "$(Agent.OS)" | requirements.txt'
@@ -44,28 +34,26 @@ stages:
           python | "$(Agent.OS)"
         path: $(Pipeline.Workspace)/.pip
       displayName: Cache pip dependencies
-
-# Install dependencies
-    - script: |
-        python -m pip install --upgrade pip
-        pip install --cache-dir $(Pipeline.Workspace)/.pip -r requirements.txt
+    - task: CmdLine@2
       displayName: Install dependencies
-
-# Install lint tool
-    - script: |
-        pip install flake8
+      inputs:
+        script: |
+          python -m pip install --upgrade pip
+          pip install --cache-dir $(Pipeline.Workspace)/.pip -r requirements.txt
+    - task: CmdLine@2
       displayName: Install lint tool
-
-# Lint code
-    - script: |
-        flake8 app --max-line-length=120
+      inputs:
+        script: |
+          pip install flake8
+    - task: CmdLine@2
       displayName: Run code linting
-
-# Run tests
-    - script: python -m pytest
+      inputs:
+        script: |
+          flake8 app --max-line-length=120
+    - task: CmdLine@2
       displayName: Run unit tests
-
-# Create artifact
+      inputs:
+        script: python -m pytest
     - task: ArchiveFiles@2
       displayName: Package application
       inputs:
@@ -74,45 +62,30 @@ stages:
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(Build.BuildId).zip
         replaceExistingArchive: true
-
-# Publish artifact
-    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(Build.BuildId).zip
-      artifact: drop
-
-
-# =========================
-# STAGE 2 - CD / DEPLOY
-# =========================
-
+    - task: ecdc45f6-832d-4ad9-b52b-ee49e94659be@1
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(Build.BuildId).zip
+        artifactName: drop
 - stage: Deploy
   displayName: Continuous Deployment
-
-  dependsOn: Build
-
+  dependsOn:
+  - Build
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-
   variables:
   - group: Susana Diez Gomez - Variables de Entorno
-
   jobs:
-
   - deployment: DeployAWS
     displayName: Deploy to AWS
-
-    environment: Susana-Deploy
-
+    environment:
+      name: Susana-Deploy
     strategy:
       runOnce:
-
         deploy:
-
           steps:
-
-# Download artifact
-          - download: current
-            artifact: drop
-
-# Upload artifact to S3
+          - task: 30f35852-3f7e-4c0c-9a88-e127b4f97211@1
+            inputs:
+              alias: current
+              artifact: drop
           - task: AWSCLI@1
             displayName: Upload artifact to S3
             inputs:
@@ -121,8 +94,6 @@ stages:
               awsCommand: s3
               awsSubCommand: cp
               awsArguments: "$(Pipeline.Workspace)/drop/$(artifactName)-$(Build.BuildId).zip s3://$(S3_BUCKET)/Susana-$(Build.BuildId).zip"
-
-# Create Application Version Deploy
           - task: AWSCLI@1
             displayName: Create application version
             inputs:
@@ -131,74 +102,69 @@ stages:
               awsCommand: elasticbeanstalk
               awsSubCommand: create-application-version
               awsArguments: >
-                --application-name $(APPLICATION_NAME)
-                --version-label Susana-$(Build.BuildId)
-                --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(Build.BuildId).zip
-
-# Check if environment exists
+                --application-name $(APPLICATION_NAME) --version-label Susana-$(Build.BuildId) --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(Build.BuildId).zip
           - task: AWSCLI@1
             name: CheckEnv
-            displayName: Check if environment exists
+            displayName: Check and set environment existence
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: describe-environments
               awsArguments: >
-                --environment-names $(ENVIRONMENT_NAME)
-
-# Update environment if exists
-          - task: AWSCLI@1
-            name: TryUpdate
-            displayName: Try update environment
+                --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].EnvironmentName" --output text
             continueOnError: true
+          - task: CmdLine@2
+            displayName: Evaluate environment existence
             inputs:
-              awsCredentials: AWS
-              regionName: $(AWS_REGION)
-              awsCommand: elasticbeanstalk
-              awsSubCommand: update-environment
-              awsArguments: >
-                --environment-name $(ENVIRONMENT_NAME)
-                --version-label Susana-$(Build.BuildId)
+              script: |
+                echo "Checking environment existence..."
 
+                RESULT=$(aws elasticbeanstalk describe-environments \
+                  --environment-names $(ENVIRONMENT_NAME) \
+                  --query "Environments[0].EnvironmentName" \
+                  --output text)
+
+                echo "Result: $RESULT"
+
+                if [ "$RESULT" = "None" ] || [ -z "$RESULT" ]; then
+                  echo "##vso[task.setvariable variable=envExists]false"
+                else
+                  echo "##vso[task.setvariable variable=envExists]true"
+                fi
           - task: AWSCLI@1
-            displayName: Create environment if update failed
-            condition: eq(variables['TryUpdate.Status'], 'Failed')
+            displayName: Create environment
+            condition: eq(variables['envExists'], 'false')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: create-environment
               awsArguments: >
-                --application-name $(APPLICATION_NAME)
-                --environment-name $(ENVIRONMENT_NAME)
-                --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
-                --version-label Susana-$(Build.BuildId)
-
+                --application-name $(APPLICATION_NAME) --environment-name $(ENVIRONMENT_NAME) --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11" --version-label Susana-$(Build.BuildId)
           - task: AWSCLI@1
-            displayName: Wait for environment to be ready
+            displayName: Update environment
+            condition: eq(variables['envExists'], 'true')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
-              awsSubCommand: wait
-              awsArguments: environment-updated --environment-names $(ENVIRONMENT_NAME)
-
+              awsSubCommand: update-environment
+              awsArguments: >
+                --environment-name $(ENVIRONMENT_NAME) --version-label Susana-$(Build.BuildId)
           - task: AWSCLI@1
             displayName: Get Environment URL
-            continueOnError: true
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
               awsCommand: elasticbeanstalk
               awsSubCommand: describe-environments
               awsArguments: >
-                --environment-names $(ENVIRONMENT_NAME)
-                --query "Environments[0].CNAME"
-                --output text
-            name: GetURL    
-
-          - script: |
-              echo "URL de la aplicación:"
-              echo "http://$(GetURL.AWSCLIOutput)"
+                --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].CNAME" --output text
+            name: GetURL
+          - task: CmdLine@2
             displayName: Print Application URL
+            inputs:
+              script: |
+                echo "URL de la aplicación:"
+                echo "http://$(GetURL.AWSCLIOutput)"
