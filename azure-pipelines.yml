@@ -151,7 +151,6 @@ stages:
 
           - task: AWSCLI@1
             displayName: Create environment
-            condition: eq(variables['CheckEnv'], 'None')
             inputs:
               awsCredentials: AWS
               regionName: $(AWS_REGION)
