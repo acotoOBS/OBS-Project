@@ -223,21 +223,20 @@ stages:
                 --application-name $(APPLICATION_NAME)
                 --version-label Susana-$(appVersion)
                 --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(appVersion).zip
-
           - script: |
               set -e
 
-              ENV_EXISTS=$(aws elasticbeanstalk describe-environments \
+              STATUS=$(aws elasticbeanstalk describe-environments \
                 --region $(awsRegion) \
                 --environment-names $(ENVIRONMENT_NAME) \
-                --query "Environments[0].EnvironmentName" \
+                --query "Environments[0].Status" \
                 --output text 2>/dev/null || echo "None")
 
-              ENV_EXISTS=$(echo "$ENV_EXISTS" | tr -d '\r\n')
+              STATUS=$(echo "$STATUS" | tr -d '\r\n')
 
-              echo "ENV_EXISTS=$ENV_EXISTS"
-              echo "##vso[task.setvariable variable=envExists]$ENV_EXISTS"
-            displayName: Check env existence (script)
+              echo "STATUS=$STATUS"
+              echo "##vso[task.setvariable variable=envStatus]$STATUS"
+            displayName: Check environment status
 
           - script: |
               echo "envExists = $(envExists)"
@@ -245,7 +244,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Create environment
-            condition: or(eq(variables['envExists'], 'None'), eq(variables['envExists'], ''))
+            condition: or(eq(variables['envStatus'], 'None'), eq(variables['envStatus'], 'Terminated'))
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
@@ -260,7 +259,7 @@ stages:
 
           - task: AWSCLI@1
             displayName: Update environment
-            condition: and(ne(variables['envExists'], 'None'), ne(variables['envExists'], ''))
+            condition: and(ne(variables['envStatus'], 'None'), ne(variables['envStatus'], 'Terminated'))
             inputs:
               awsCredentials: AWS
               regionName: $(awsRegion)
