@@ -135,7 +135,7 @@ stages:
                 --version-label Susana-$(Build.BuildId)
                 --source-bundle S3Bucket=$(S3_BUCKET),S3Key=Susana-$(Build.BuildId).zip
 
-# Validate if Environment Exists
+# Check if environment exists
           - task: AWSCLI@1
             name: CheckEnv
             displayName: Check if environment exists
@@ -148,9 +148,7 @@ stages:
               awsArguments: >
                 --environment-names $(ENVIRONMENT_NAME)
 
-# Deploy to Elastic Beanstalk
-# Handle case where Elastic Beanstalk environment may not exist
-# Create Environment If Not Exist
+# Create environment if NOT exists
           - task: AWSCLI@1
             displayName: Create environment
             condition: failed('CheckEnv')
@@ -165,7 +163,7 @@ stages:
                 --solution-stack-name "64bit Amazon Linux 2 v3.5.0 running Python 3.8"
                 --version-label Susana-$(Build.BuildId)
 
-# Update Encironment If Exist
+# Update environment if exists
           - task: AWSCLI@1
             displayName: Update environment
             condition: succeeded('CheckEnv')
