@@ -5,20 +5,21 @@ variables:
 
   pythonVersion: '3.11'
   artifactName: 'package-artifact'
+  awsRegion: 'us-east-1'
 
 stages:
 
 # =========================
-# STAGE 1 - BUILD / CI
+# STAGE 1 - CI / BUILD
 # =========================
 
 - stage: Build
-  displayName: Build Stage
+  displayName: Continuous Integration
 
   jobs:
 
   - job: BuildJob
-    displayName: Build Python Application
+    displayName: Build and Test Application
 
     pool:
       vmImage: ubuntu-latest
@@ -28,35 +29,60 @@ stages:
     - task: UsePythonVersion@0
       inputs:
         versionSpec: $(pythonVersion)
+      displayName: Use Python $(pythonVersion)
 
+# Cache pip dependencies
+    - task: Cache@2
+      inputs:
+        key: 'python | "$(Agent.OS)" | requirements.txt'
+        restoreKeys: |
+          python | "$(Agent.OS)"
+        path: ~/.cache/pip
+      displayName: Cache pip dependencies
+
+# Install dependencies
     - script: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
       displayName: Install dependencies
 
+# Install lint tool
+    - script: |
+        pip install flake8
+      displayName: Install lint tool
+
+# Lint code
+    - script: |
+        flake8 app --max-line-length=120
+      displayName: Run code linting
+
+# Run tests
     - script: |
         pytest
-      displayName: Run tests
+      displayName: Run unit tests
 
+# Create artifact
     - task: ArchiveFiles@2
-      displayName: Create artifact zip
+      displayName: Package application
       inputs:
         rootFolderOrFile: $(Build.SourcesDirectory)
         includeRootFolder: false
         archiveType: zip
-        archiveFile: $(Build.ArtifactStagingDirectory)/$(artifactName).zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(Build.BuildId).zip
         replaceExistingArchive: true
 
-    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName).zip
+# Publish artifact
+    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName)-$(Build.BuildId).zip
       artifact: drop
 
 
 # =========================
-# STAGE 2 - DEPLOY / CD
+# STAGE 2 - CD / DEPLOY
 # =========================
 
 - stage: Deploy
-  displayName: Deploy Stage
+  displayName: Continuous Deployment
+
   dependsOn: Build
 
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
@@ -67,6 +93,8 @@ stages:
   jobs:
 
   - deployment: DeployAWS
+    displayName: Deploy to AWS
+
     environment: production
 
     strategy:
@@ -76,24 +104,27 @@ stages:
 
           steps:
 
+# Download artifact
           - download: current
             artifact: drop
 
+# Upload artifact to S3
           - task: AWSCLI@1
             displayName: Upload artifact to S3
             inputs:
               awsCredentials: AWS
-              regionName: us-east-1
+              regionName: $(awsRegion)
               awsCommand: s3
               awsSubCommand: cp
-              awsArguments: "$(Pipeline.Workspace)/drop/package-artifact.zip s3://pruebas-devops1/Susana-$(Build.BuildId).zip"
+              awsArguments: "$(Pipeline.Workspace)/drop/$(artifactName)-$(Build.BuildId).zip s3://pruebas-devops1/Susana-$(Build.BuildId).zip"
 
+# Deploy to Elastic Beanstalk
           - task: AWSElasticBeanstalkDeployApplication@1
-            displayName: Deploy to Elastic Beanstalk
+            displayName: Deploy application
             inputs:
               awsCredentials: AWS
-              regionName: us-east-1
+              regionName: $(awsRegion)
               applicationName: Pruebas
               environmentName: Pruebas-env-2
               applicationType: python
-              deploymentBundle: "$(Pipeline.Workspace)/drop/package-artifact.zip"
+              deploymentBundle: "$(Pipeline.Workspace)/drop/$(artifactName)-$(Build.BuildId).zip"
