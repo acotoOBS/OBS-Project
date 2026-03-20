@@ -150,7 +150,10 @@ stages:
                 --environment-names $(ENVIRONMENT_NAME) --query "Environments[0].EnvironmentName" --output text
 
           - script: |
-              echo "Environment exists: $(CheckEnv.AWSCLIOutput)"
+              echo "Environment exists: $ENV_EXISTS"
+            displayName: Print environment check
+            env:
+              ENV_EXISTS: $(CheckEnv.AWSCLIOutput)
 
           - task: AWSCLI@1
             displayName: Create environment
