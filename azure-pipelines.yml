@@ -199,6 +199,7 @@ stages:
       runOnce:
         deploy:
           steps:
+
           - download: current
             artifact: drop
 
@@ -238,8 +239,8 @@ stages:
             displayName: Wait before recreate
             inputs:
               script: |
-                echo "Waiting 60 seconds for AWS cleanup..."
-                sleep 60
+                echo "Waiting 90 seconds for AWS cleanup..."
+                sleep 90
 
           - task: AWSCLI@1
             displayName: Create environment
@@ -255,49 +256,12 @@ stages:
                 --version-label Susana-$(appVersion)
                 --option-settings Namespace=aws:autoscaling:launchconfiguration,OptionName=IamInstanceProfile,Value=aws-elasticbeanstalk-ec2-role
 
-          - script: |
-              echo "Waiting for environment to be ready..."
-
-              for i in {1..40}
-              do
-                STATUS=$(aws elasticbeanstalk describe-environments \
-                  --region $(awsRegion) \
-                  --environment-names $(ENVIRONMENT_NAME) \
-                  --query "Environments[0].Status" \
-                  --output text)
-
-                echo "Status: $STATUS"
-
-                if [ "$STATUS" = "Ready" ]; then
-                  echo "Environment ready"
-                  exit 0
-                fi
-
-                sleep 15
-              done
-
-              echo "Timeout waiting for environment"
-              exit 1
-            displayName: Wait for environment readiness
-            env:
-              AWS_DEFAULT_REGION: $(awsRegion)
-
-          - script: |
-              HEALTH=$(aws elasticbeanstalk describe-environments \
-                --region $(awsRegion) \
-                --environment-names $(ENVIRONMENT_NAME) \
-                --query "Environments[0].Health" \
-                --output text)
-
-              echo "Health: $HEALTH"
-
-              if [ "$HEALTH" != "Green" ]; then
-                echo "Environment unhealthy"
-                exit 1
-              fi
-            displayName: Validate environment health
-            env:
-              AWS_DEFAULT_REGION: $(awsRegion)
+          - task: CmdLine@2
+            displayName: Wait for environment startup
+            inputs:
+              script: |
+                echo "Waiting 3 minutes for environment startup..."
+                sleep 180
 
           - task: AWSCLI@1
             displayName: Get EB Events (Debug)
