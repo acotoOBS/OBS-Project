@@ -182,7 +182,6 @@ stages:
   - Build
   - Versioning
   - SetupAWS
-  - SetupInfra
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
   variables:
