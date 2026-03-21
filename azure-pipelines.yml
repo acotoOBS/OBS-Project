@@ -178,8 +178,9 @@ stages:
 
 - stage: SetupInfra
   displayName: Setup VPC
-  dependsOn: Build
-  dependsOn: SetupAWS
+  dependsOn: 
+  - Build
+  - SetupAWS
   jobs:
   - job: CreateVPC
     pool:
