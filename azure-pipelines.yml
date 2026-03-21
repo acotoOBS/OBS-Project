@@ -235,21 +235,38 @@ stages:
               awsArguments: >
                 --environment-name $(ENVIRONMENT_NAME)
 
-                    - task: AWSCLI@1
-                      displayName: Try create environment
-                      continueOnError: true
-                      inputs:
-                        awsCredentials: AWS
-                        regionName: $(awsRegion)
-                        awsCommand: elasticbeanstalk
-                        awsSubCommand: create-environment
-                        awsArguments: >
-                          --application-name $(APPLICATION_NAME)
-                          --environment-name $(ENVIRONMENT_NAME)
-                          --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
-                          --version-label Susana-$(appVersion)
-                          --option-settings Namespace=aws:autoscaling:launchconfiguration,OptionName=IamInstanceProfile,Value=aws-elasticbeanstalk-ec2-role
+          - task: AWSCLI@1
+            displayName: Terminate environment
+            continueOnError: true
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: terminate-environment
+              awsArguments: >
+                --environment-name $(ENVIRONMENT_NAME)
 
+          - task: CmdLine@2
+            displayName: Wait before recreate
+            inputs:
+              script: |
+                echo "Waiting 60 seconds for AWS cleanup..."
+                sleep 60
+
+          - task: AWSCLI@1
+            displayName: Create environment clean
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: elasticbeanstalk
+              awsSubCommand: create-environment
+              awsArguments: >
+                --application-name $(APPLICATION_NAME)
+                --environment-name $(ENVIRONMENT_NAME)
+                --solution-stack-name "64bit Amazon Linux 2023 v4.11.0 running Python 3.11"
+                --version-label Susana-$(appVersion)
+                --option-settings Namespace=aws:autoscaling:launchconfiguration,OptionName=IamInstanceProfile,Value=aws-elasticbeanstalk-ec2-role
+                
           - script: |
               echo "Waiting for environment termination..."
 
