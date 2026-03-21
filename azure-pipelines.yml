@@ -176,29 +176,6 @@ stages:
         sleep 20
       displayName: Wait for IAM propagation
 
-- stage: SetupInfra
-  displayName: Setup VPC
-  dependsOn: 
-  - Build
-  - SetupAWS
-  jobs:
-  - job: CreateVPC
-    pool:
-      vmImage: ubuntu-latest
-
-    steps:
-    - task: AWSCLI@1
-      displayName: Create VPC via CloudFormation
-      inputs:
-        awsCredentials: AWS
-        regionName: $(awsRegion)
-        awsCommand: cloudformation
-        awsSubCommand: deploy
-        awsArguments: >
-          --stack-name Susana-VPC
-          --template-file vpc.yml
-          --capabilities CAPABILITY_NAMED_IAM
-
 - stage: Deploy
   displayName: Continuous Deployment
   dependsOn:
@@ -226,6 +203,15 @@ stages:
 
           - download: current
             artifact: drop
+
+          - task: AWSCLI@1
+            displayName: Ensure Default VPC exists
+            continueOnError: true
+            inputs:
+              awsCredentials: AWS
+              regionName: $(awsRegion)
+              awsCommand: ec2
+              awsSubCommand: create-default-vpc
 
           - task: AWSCLI@1
             displayName: Upload artifact to S3
