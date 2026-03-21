@@ -179,7 +179,7 @@ stages:
 - stage: SetupInfra
   displayName: Setup VPC
   dependsOn: Build
-
+  dependsOn: SetupAWS
   jobs:
   - job: CreateVPC
     pool:
@@ -204,6 +204,7 @@ stages:
   - Build
   - Versioning
   - SetupAWS
+  - SetupInfra
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
   variables:
