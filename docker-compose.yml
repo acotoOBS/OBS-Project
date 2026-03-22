@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  package-tracking-api:
+    build: .
+    container_name: package-tracking-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./orders.db:/app/orders.db
+    environment:
+      APP_ENV: dev
+      APP_NAME: package-tracking-api
