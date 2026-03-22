@@ -1,10 +1,38 @@
-# Prueba Técnica Susana Díez Gómez
+# Prueba Técnica – API de Gestión de Pedidos
+
+## Descripción
+
+Este proyecto consiste en una API desarrollada con FastAPI para la gestión de pedidos, incluyendo operaciones básicas como creación, consulta y actualización.
+
+La aplicación fue dockerizada para garantizar un entorno de ejecución estandarizado y facilitar el trabajo en equipo.
+
+---
+
+## Ejecución con Docker
+
+### Requisitos
+
+- Docker Desktop instalado
+
+### Levantar la aplicación
+
+docker compose up --build
 
 ## Ambiente Local
 
 Para acceder localmente:
+API: http://localhost:8000
+Documentación Swagger: http://localhost:8000/docs
 
-http://localhost:8000/docs#/
+---
+
+## Setup para desarrolladores
+1. Clonar el repositorio
+git clone https://github.com/acotoOBS/OBS-Project.git
+cd OBS-Project
+
+2. Levantar la aplicación
+docker compose up --build
 
 ---
 
@@ -94,6 +122,7 @@ Se utilizó el resultado de ejecución de tareas (success/failure) para controla
 
 ## Decisiones DevOps
 
+- Dockerización para estandarizar el entorno de desarrollo
 - Implementación de despliegues idempotentes
 - Eliminación de scripts innecesarios para evitar problemas de credenciales
 - Uso exclusivo de AWS CLI dentro del pipeline
