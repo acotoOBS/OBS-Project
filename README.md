@@ -16,7 +16,7 @@ La aplicación fue dockerizada para garantizar un entorno de ejecución estandar
 
 ### Levantar la aplicación
 
-docker compose up --build
+docker-compose up --build
 
 ## Ambiente Local
 
@@ -32,7 +32,7 @@ Para acceder localmente:
 - cd OBS-Project
 
 2. Levantar la aplicación
-docker compose up --build
+docker-compose up --build
 
 No es necesario instalar Python ni dependencias manualmente, ya que todo el entorno se ejecuta mediante Docker.
 Tiempo estimado de onboarding: 5 minutos.
