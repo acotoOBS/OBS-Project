@@ -34,6 +34,29 @@ cd OBS-Project
 2. Levantar la aplicación
 docker compose up --build
 
+No es necesario instalar Python ni dependencias manualmente, ya que todo el entorno se ejecuta mediante Docker.
+Tiempo estimado de onboarding: 5 minutos.
+
+---
+
+## IDE y herramientas de desarrollo
+
+Se definió como entorno de desarrollo:
+
+- IDE: Visual Studio Code
+
+Extensiones recomendadas:
+- Python
+- Docker
+- GitLens
+
+Motivo:
+- Es liviano y multiplataforma
+- Tiene excelente integración con Docker
+- Permite trabajar fácilmente con FastAPI
+- Facilita la colaboración en equipo mediante extensiones de Git
+- Es ampliamente utilizado en entornos profesionales
+
 ---
 
 ## Stack Tecnológico
