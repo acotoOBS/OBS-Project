@@ -21,15 +21,15 @@ docker compose up --build
 ## Ambiente Local
 
 Para acceder localmente:
-API: http://localhost:8000
-Documentación Swagger: http://localhost:8000/docs
+- API: http://localhost:8000
+- Documentación Swagger: http://localhost:8000/docs
 
 ---
 
 ## Setup para desarrolladores
 1. Clonar el repositorio
-git clone https://github.com/acotoOBS/OBS-Project.git
-cd OBS-Project
+- git clone https://github.com/acotoOBS/OBS-Project.git
+- cd OBS-Project
 
 2. Levantar la aplicación
 docker compose up --build
