@@ -38,25 +38,34 @@ No es necesario instalar Python ni dependencias manualmente, ya que todo el ento
 Tiempo estimado de onboarding: 5 minutos.
 
 ---
-
 ## IDE y herramientas de desarrollo
 
 Se definió como entorno de desarrollo:
 
-- IDE: Visual Studio Code
+- **IDE:** Visual Studio Code
 
-Extensiones recomendadas:
-- Python
-- Docker
-- GitLens
+### Extensiones recomendadas
 
-Motivo:
-- Es liviano y multiplataforma
+Las extensiones están definidas en `.vscode/extensions.json`. Al abrir el proyecto en VS Code, se sugieren automáticamente con un solo clic.
+
+| Extensión | Motivo |
+|-----------|--------|
+| Python (ms-python.python) | IntelliSense, debugging y linting para Python |
+| Pylance (ms-python.pylance) | Autocompletado avanzado e inferencia de tipos |
+| flake8 (ms-python.flake8) | Linting PEP8 en tiempo real, igual que en el pipeline CI |
+| Docker (ms-azuretools.vscode-docker) | Gestión de contenedores desde el editor |
+| GitLens (eamodio.gitlens) | Historial de commits y git blame inline |
+| REST Client (humao.rest-client) | Probar endpoints FastAPI sin necesidad de Postman |
+| YAML (redhat.vscode-yaml) | Autocompletado para docker-compose.yml y azure-pipelines.yml |
+| EditorConfig (editorconfig.editorconfig) | Consistencia de formato entre los miembros del equipo |
+
+### Motivo de la elección
+
+- Es liviano y multiplataforma (Windows, macOS, Linux)
 - Tiene excelente integración con Docker
 - Permite trabajar fácilmente con FastAPI
 - Facilita la colaboración en equipo mediante extensiones de Git
 - Es ampliamente utilizado en entornos profesionales
-
 ---
 
 ## Stack Tecnológico
