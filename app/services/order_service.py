@@ -57,3 +57,15 @@ def update_order(db: Session, order_id: int, order: OrderCreate):
     db.refresh(db_order)
     
     return db_order
+
+def delete_order(db: Session, order_id: int):
+    
+    db_order = db.query(Order).filter(Order.id == order_id).first()
+    
+    if not db_order:
+        return False
+    
+    db.delete(db_order)
+    db.commit()
+    
+    return True
