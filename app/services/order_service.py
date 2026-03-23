@@ -43,3 +43,17 @@ def update_order_status(db, order_id: int, status):
     db.refresh(order)
 
     return order
+
+def update_order(db: Session, order_id: int, order: OrderCreate):
+    
+    db_order = db.query(Order).filter(Order.id == order_id).first()
+    
+    if not db_order:
+        return None
+    
+    db_order.customer_name = order.customer_name
+    db_order.destination = order.destination
+    db.commit()
+    db.refresh(db_order)
+    
+    return db_order
