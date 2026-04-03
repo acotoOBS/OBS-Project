@@ -217,3 +217,10 @@ Esta solución no solo cumple con los requerimientos funcionales, sino que incor
 - errores en tiempo de ejecución
 - resiliencia del pipeline
 - automatización completa del ciclo de despliegue
+
+
+## Organización del trabajo del equipo
+
+Para esta actividad se trabajará con una rama por integrante, realizando varios commits por rama y fusionando los cambios finales en la rama principal.
+
+Se utilizarán archivos compartidos, como `README.md` y `TASKS.md`, para practicar la resolución de cambios concurrentes entre distintas ramas.
