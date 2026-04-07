@@ -224,3 +224,20 @@ Esta solución no solo cumple con los requerimientos funcionales, sino que incor
 Para esta actividad se trabajará con una rama por integrante, realizando varios commits por rama y fusionando los cambios finales en la rama principal.
 
 Se utilizarán archivos compartidos, como `README.md` y `TASKS.md`, para practicar la resolución de cambios concurrentes entre distintas ramas.
+
+### Flujo de trabajo
+
+- Cada integrante crea su propia rama
+- Se realizan varios commits en cada rama
+- Todos los integrantes modifican archivos compartidos
+- Se generan conflictos durante el merge en la rama principal
+- Los conflictos se resuelven manualmente
+
+### Objetivo
+
+Practicar la gestión de cambios en equipo, incluyendo:
+
+- Trabajo concurrente sobre los mismos archivos
+- Uso de ramas para desarrollo aislado
+- Resolución de conflictos en Git
+- Integración de cambios en una rama común
