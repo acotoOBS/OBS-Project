@@ -4,7 +4,7 @@
 Practicar la gestión de cambios en Git sobre el repositorio OBS-Project mediante ramas individuales, varios commits por rama y fusión final en main.
 
 ## Estrategia de trabajo
-- Se creará una rama por integrante.
+- Cada miembro crea su propia rama basada en main.
 - Cada integrante realizará varios commits.
 - Todos modificarán al menos un archivo común.
 - Los cambios finales se fusionarán en la rama principal.
@@ -20,9 +20,9 @@ Practicar la gestión de cambios en Git sobre el repositorio OBS-Project mediant
 - Actualizar README.md
 - Agregar documentación sobre ...
 
-### Integrante 3
-- Actualizar README.md
-- Agregar documentación sobre ...
+### Rubén - rubendelaosa
+- Actualizar README.md con flujo de trabajo y sección de colaboración
+- Actualizar TASKS.md con cambios en estrategias de trabajo y tareas propuesas
 
 ### Integrante 4
 - Actualizar README.md
