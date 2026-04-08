@@ -162,6 +162,43 @@ Se utilizó el resultado de ejecución de tareas (success/failure) para controla
 
 ---
 
+## Mejoras Identificadas y Acciones Recomendadas
+
+Aunque el proyecto cumple con los requerimientos funcionales, se han identificado oportunidades de mejora para aumentar la calidad, robustez y mantenibilidad:
+
+### Funcionalidad
+- Completar funciones faltantes en `order_service.py` (`update_order` y `delete_order`)
+- Mejorar validación de estados en `update_order_status`
+- Agregar type hints completos a todos los parámetros
+
+### Testing y Calidad
+- Expandir cobertura de tests (CRUD completo, casos de error, validaciones)
+- Implementar fixtures y mocks para tests más robustos
+- Configurar reporte de coverage de código
+
+### Observabilidad
+- Implementar logging estructurado (utilizar `app/utils/logger.py`)
+- Agregar logs a transacciones críticas y errores
+- Registrar tiempos de respuesta en endpoints
+
+### Infraestructura de Datos
+- Implementar Alembic para migraciones versionadas
+- Agregar campos `updated_at` al modelo Order
+- Crear índices adicionales para optimizar queries
+
+### Seguridad y Configuración
+- Agregar CORS configurado según ambiente
+- Implementar autenticación básica o JWT
+- Expandir `config.py` con variables de ambiente por nivel (dev/staging/prod)
+- Implementar middleware global de manejo de excepciones
+
+### Documentación
+- Agregar docstrings a funciones y clases
+- Documentar esquemas con ejemplos en `/docs`
+- Crear CONTRIBUTING.md para guía de contribuciones
+
+---
+
 ## Evolución de la Solución
 
 ### Contenedorización
