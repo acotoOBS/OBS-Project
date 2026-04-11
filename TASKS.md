@@ -16,9 +16,9 @@ Practicar la gestión de cambios en Git sobre el repositorio OBS-Project mediant
 - Actualizar el README.md con una sección de organización del trabajo
 - Crear un archivo de documentación adicional
 
-### Integrante 2
-- Actualizar README.md
-- Agregar documentación sobre ...
+### Ariel -rama-acoto
+- Actualizar README.md 
+- Modificar el TASK.md
 
 ### Rubén - rubendelaosa
 - Actualizar README.md con flujo de trabajo y sección de colaboración
