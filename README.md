@@ -2,9 +2,9 @@
 
 ## Descripción
 
-Este proyecto consiste en una API desarrollada con **FastAPI** para la gestión de pedidos, incluyendo operaciones básicas como creación, consulta, actualización y eliminación.
+Este proyecto consiste en una API desarrollada con FastAPI para la gestión de pedidos, incluyendo operaciones básicas como creación, consulta y actualización.
 
-La aplicación fue dockerizada para garantizar un entorno de ejecución consistente, eliminar dependencias locales y facilitar el trabajo en equipo.
+La aplicación fue dockerizada para garantizar un entorno de ejecución estandarizado y facilitar el trabajo en equipo.
 
 ---
 
@@ -14,13 +14,8 @@ La aplicación fue dockerizada para garantizar un entorno de ejecución consiste
 
 - Docker Desktop instalado
 
-## Quick Start
+### Levantar la aplicación
 
-Ejecuta el proyecto en segundos:
-
-bash
-git clone https://github.com/acotoOBS/OBS-Project.git
-cd OBS-Project
 docker-compose up --build
 
 ## Ambiente Local
@@ -43,26 +38,14 @@ No es necesario instalar Python ni dependencias manualmente, ya que todo el ento
 Tiempo estimado de onboarding: 5 minutos.
 
 ---
-
 ## IDE y herramientas de desarrollo
 
 Se definió como entorno de desarrollo:
 
-- IDE: Visual Studio Code
+- **IDE:** Visual Studio Code
 
-Extensiones recomendadas:
-- Python
-- Docker
-- GitLens
+### Extensiones recomendadas
 
-<<<<<<< Updated upstream
-Motivo:
-- Es liviano y multiplataforma
-- Tiene excelente integración con Docker
-- Permite trabajar fácilmente con FastAPI
-- Facilita la colaboración en equipo mediante extensiones de Git
-- Es ampliamente utilizado en entornos profesionales
-=======
 Las extensiones están definidas en `.vscode/extensions.json`. Al abrir el proyecto en VS Code, se sugieren automáticamente con un solo clic.
 
 | Extensión | Motivo |
@@ -78,13 +61,11 @@ Las extensiones están definidas en `.vscode/extensions.json`. Al abrir el proye
 
 ### Motivo de la elección
 
-- Liviano y multiplataforma (Windows, macOS, Linux)
-- Excelente integración con Docker
-- Facilita el desarrollo con FastAPI
-- Mejora la colaboración en equipo
-- Amplia adopción en entornos profesionales
->>>>>>> Stashed changes
-
+- Es liviano y multiplataforma (Windows, macOS, Linux)
+- Tiene excelente integración con Docker
+- Permite trabajar fácilmente con FastAPI
+- Facilita la colaboración en equipo mediante extensiones de Git
+- Es ampliamente utilizado en entornos profesionales
 ---
 
 ## Stack Tecnológico
@@ -104,8 +85,7 @@ Las extensiones están definidas en `.vscode/extensions.json`. Al abrir el proye
 
 - Instalación de dependencias
 - Validación de código con flake8
-- Ejecución de tests
-- Construcción del artefacto (.zip)
+- Construcción del artefacto (zip)
 
 ### Despliegue Continuo (CD)
 
@@ -115,46 +95,38 @@ Las extensiones están definidas en `.vscode/extensions.json`. Al abrir el proye
 
 ---
 
-# Trade-offs
-
-- SQLite: simplicidad vs limitaciones en concurrencia
-- Elastic Beanstalk: rapidez de despliegue vs menor control
-- Deploy en ZIP: simplicidad vs menor flexibilidad frente a contenedores
-
----
-
 ## Retos Encontrados y Soluciones
 
 ### Manejo de credenciales AWS en scripts
 
-Problema:
+Problema:  
 Los pasos tipo script no heredan credenciales configuradas en Azure DevOps.
 
-Solución:
-Uso exclusivo de tareas AWSCLI@1.
+Solución:  
+Se utilizaron exclusivamente tareas AWSCLI@1 para todas las operaciones relacionadas con AWS.
 
 ---
 
 ### Environment en estado Terminated
 
-Problema:
-Elastic Beanstalk puede retornar environments en estado inválido.
+Problema:  
+Elastic Beanstalk puede retornar environments existentes en estado Terminated, los cuales no son válidos para despliegue.
 
-Solución:
-Estrategia idempotente:
+Solución:  
+Se implementó una estrategia idempotente:
 
 - Intentar update-environment
-- Si falla → create-environment
+- Si falla, ejecutar create-environment
 
 ---
 
 ### Solution Stacks deprecados
 
-Problema:
-Algunas versiones de runtime no estaban disponibles.
+Problema:  
+Algunas versiones de runtime no estaban disponibles en la región.
 
-Solución:
-
+Solución:  
+Se utilizó un stack válido confirmado en ejecución:
 - Amazon Linux 2023
 - Python 3.11
 
@@ -162,39 +134,68 @@ Solución:
 
 ### Despliegue asíncrono
 
-Problema:
-Elastic Beanstalk no garantiza disponibilidad inmediata.
+Problema:  
+Elastic Beanstalk no garantiza disponibilidad inmediata después del despliegue.
 
-Solución:
-Pipeline desacoplado del estado final.
+Solución:  
+El pipeline no depende del estado final del environment, alineándose con prácticas reales de despliegue.
 
 ---
 
 ### Limitaciones de Azure DevOps
 
-Problema:
-No es posible evaluar directamente outputs de AWSCLI.
+Problema:  
+No es posible evaluar directamente el output de tareas AWSCLI en condiciones.
 
-Solución:
-Uso de resultados de ejecución (success/failure).
+Solución:  
+Se utilizó el resultado de ejecución de tareas (success/failure) para controlar el flujo del pipeline.
 
 ---
 
 ## Decisiones DevOps
 
-- Dockerización para estandarizar el entorno
-- Despliegues idempotentes
-- Eliminación de scripts frágiles
-- Uso controlado de AWS CLI
-- Priorización de resiliencia
+- Dockerización para estandarizar el entorno de desarrollo
+- Implementación de despliegues idempotentes
+- Eliminación de scripts innecesarios para evitar problemas de credenciales
+- Uso exclusivo de AWS CLI dentro del pipeline
+- Priorización de resiliencia sobre validaciones rígidas
 
 ---
 
-## Objetivos de calidad
+## Mejoras Identificadas y Acciones Recomendadas
 
-- Cobertura de tests: >80%
-- Tiempo de respuesta: <200ms
-- Disponibilidad: 99.9%
+Aunque el proyecto cumple con los requerimientos funcionales, se han identificado oportunidades de mejora para aumentar la calidad, robustez y mantenibilidad:
+
+### Funcionalidad
+- Completar funciones faltantes en `order_service.py` (`update_order` y `delete_order`)
+- Mejorar validación de estados en `update_order_status`
+- Agregar type hints completos a todos los parámetros
+
+### Testing y Calidad
+- Expandir cobertura de tests (CRUD completo, casos de error, validaciones)
+- Implementar fixtures y mocks para tests más robustos
+- Configurar reporte de coverage de código
+
+### Observabilidad
+- Implementar logging estructurado (utilizar `app/utils/logger.py`)
+- Agregar logs a transacciones críticas y errores
+- Registrar tiempos de respuesta en endpoints
+
+### Infraestructura de Datos
+- Implementar Alembic para migraciones versionadas
+- Agregar campos `updated_at` al modelo Order
+- Crear índices adicionales para optimizar queries
+
+### Seguridad y Configuración
+- Agregar CORS configurado según ambiente
+- Implementar autenticación básica o JWT
+- Expandir `config.py` con variables de ambiente por nivel (dev/staging/prod)
+- Implementar middleware global de manejo de excepciones
+
+### Documentación
+- Agregar docstrings a funciones y clases
+- Documentar esquemas con ejemplos en `/docs`
+- Crear CONTRIBUTING.md para guía de contribuciones
 
 ---
 
@@ -253,3 +254,27 @@ Esta solución no solo cumple con los requerimientos funcionales, sino que incor
 - errores en tiempo de ejecución
 - resiliencia del pipeline
 - automatización completa del ciclo de despliegue
+
+
+## Organización del trabajo del equipo
+
+Para esta actividad se trabajará con una rama por integrante, realizando varios commits por rama y fusionando los cambios finales en la rama principal.
+
+Se utilizarán archivos compartidos, como `README.md` y `TASKS.md`, para practicar la resolución de cambios concurrentes entre distintas ramas.
+
+### Flujo de trabajo
+
+- Cada integrante crea su propia rama
+- Se realizan varios commits en cada rama
+- Todos los integrantes modifican archivos compartidos
+- Se generan conflictos durante el merge en la rama principal
+- Los conflictos se resuelven manualmente
+
+### Objetivo
+
+Practicar la gestión de cambios en equipo, incluyendo:
+
+- Trabajo concurrente sobre los mismos archivos
+- Uso de ramas para desarrollo aislado
+- Resolución de conflictos en Git
+- Integración de cambios en una rama común

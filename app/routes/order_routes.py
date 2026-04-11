@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
 
 from app.database import SessionLocal
 from app.schemas.order_schema import OrderCreate, Order
@@ -36,6 +37,18 @@ def get_order(order_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Order not found")
 
     return order
+
+
+@router.get("/filter/by-price", response_model=List[Order])
+def get_orders_by_price(
+    min_price: float,
+    max_price: float,
+    db: Session = Depends(get_db)
+):
+    if min_price > max_price:
+        raise HTTPException(status_code=400, detail="min_price cannot be greater than max_price")
+
+    return order_service.get_orders_by_price_range(db, min_price, max_price)
 
 
 @router.put("/{order_id}", response_model=Order)
