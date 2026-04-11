@@ -2,9 +2,9 @@
 
 ## Descripción
 
-Este proyecto consiste en una API desarrollada con FastAPI para la gestión de pedidos, incluyendo operaciones básicas como creación, consulta y actualización.
+Este proyecto consiste en una API desarrollada con **FastAPI** para la gestión de pedidos, incluyendo operaciones básicas como creación, consulta, actualización y eliminación.
 
-La aplicación fue dockerizada para garantizar un entorno de ejecución estandarizado y facilitar el trabajo en equipo.
+La aplicación fue dockerizada para garantizar un entorno de ejecución consistente, eliminar dependencias locales y facilitar el trabajo en equipo.
 
 ---
 
@@ -14,8 +14,13 @@ La aplicación fue dockerizada para garantizar un entorno de ejecución estandar
 
 - Docker Desktop instalado
 
-### Levantar la aplicación
+## Quick Start
 
+Ejecuta el proyecto en segundos:
+
+bash
+git clone https://github.com/acotoOBS/OBS-Project.git
+cd OBS-Project
 docker-compose up --build
 
 ## Ambiente Local
@@ -50,12 +55,35 @@ Extensiones recomendadas:
 - Docker
 - GitLens
 
+<<<<<<< Updated upstream
 Motivo:
 - Es liviano y multiplataforma
 - Tiene excelente integración con Docker
 - Permite trabajar fácilmente con FastAPI
 - Facilita la colaboración en equipo mediante extensiones de Git
 - Es ampliamente utilizado en entornos profesionales
+=======
+Las extensiones están definidas en `.vscode/extensions.json`. Al abrir el proyecto en VS Code, se sugieren automáticamente con un solo clic.
+
+| Extensión | Motivo |
+|-----------|--------|
+| Python (ms-python.python) | IntelliSense, debugging y linting para Python |
+| Pylance (ms-python.pylance) | Autocompletado avanzado e inferencia de tipos |
+| flake8 (ms-python.flake8) | Linting PEP8 en tiempo real, igual que en el pipeline CI |
+| Docker (ms-azuretools.vscode-docker) | Gestión de contenedores desde el editor |
+| GitLens (eamodio.gitlens) | Historial de commits y git blame inline |
+| REST Client (humao.rest-client) | Probar endpoints FastAPI sin necesidad de Postman |
+| YAML (redhat.vscode-yaml) | Autocompletado para docker-compose.yml y azure-pipelines.yml |
+| EditorConfig (editorconfig.editorconfig) | Consistencia de formato entre los miembros del equipo |
+
+### Motivo de la elección
+
+- Liviano y multiplataforma (Windows, macOS, Linux)
+- Excelente integración con Docker
+- Facilita el desarrollo con FastAPI
+- Mejora la colaboración en equipo
+- Amplia adopción en entornos profesionales
+>>>>>>> Stashed changes
 
 ---
 
@@ -76,7 +104,8 @@ Motivo:
 
 - Instalación de dependencias
 - Validación de código con flake8
-- Construcción del artefacto (zip)
+- Ejecución de tests
+- Construcción del artefacto (.zip)
 
 ### Despliegue Continuo (CD)
 
@@ -86,38 +115,46 @@ Motivo:
 
 ---
 
+# Trade-offs
+
+- SQLite: simplicidad vs limitaciones en concurrencia
+- Elastic Beanstalk: rapidez de despliegue vs menor control
+- Deploy en ZIP: simplicidad vs menor flexibilidad frente a contenedores
+
+---
+
 ## Retos Encontrados y Soluciones
 
 ### Manejo de credenciales AWS en scripts
 
-Problema:  
+Problema:
 Los pasos tipo script no heredan credenciales configuradas en Azure DevOps.
 
-Solución:  
-Se utilizaron exclusivamente tareas AWSCLI@1 para todas las operaciones relacionadas con AWS.
+Solución:
+Uso exclusivo de tareas AWSCLI@1.
 
 ---
 
 ### Environment en estado Terminated
 
-Problema:  
-Elastic Beanstalk puede retornar environments existentes en estado Terminated, los cuales no son válidos para despliegue.
+Problema:
+Elastic Beanstalk puede retornar environments en estado inválido.
 
-Solución:  
-Se implementó una estrategia idempotente:
+Solución:
+Estrategia idempotente:
 
 - Intentar update-environment
-- Si falla, ejecutar create-environment
+- Si falla → create-environment
 
 ---
 
 ### Solution Stacks deprecados
 
-Problema:  
-Algunas versiones de runtime no estaban disponibles en la región.
+Problema:
+Algunas versiones de runtime no estaban disponibles.
 
-Solución:  
-Se utilizó un stack válido confirmado en ejecución:
+Solución:
+
 - Amazon Linux 2023
 - Python 3.11
 
@@ -125,31 +162,39 @@ Se utilizó un stack válido confirmado en ejecución:
 
 ### Despliegue asíncrono
 
-Problema:  
-Elastic Beanstalk no garantiza disponibilidad inmediata después del despliegue.
+Problema:
+Elastic Beanstalk no garantiza disponibilidad inmediata.
 
-Solución:  
-El pipeline no depende del estado final del environment, alineándose con prácticas reales de despliegue.
+Solución:
+Pipeline desacoplado del estado final.
 
 ---
 
 ### Limitaciones de Azure DevOps
 
-Problema:  
-No es posible evaluar directamente el output de tareas AWSCLI en condiciones.
+Problema:
+No es posible evaluar directamente outputs de AWSCLI.
 
-Solución:  
-Se utilizó el resultado de ejecución de tareas (success/failure) para controlar el flujo del pipeline.
+Solución:
+Uso de resultados de ejecución (success/failure).
 
 ---
 
 ## Decisiones DevOps
 
-- Dockerización para estandarizar el entorno de desarrollo
-- Implementación de despliegues idempotentes
-- Eliminación de scripts innecesarios para evitar problemas de credenciales
-- Uso exclusivo de AWS CLI dentro del pipeline
-- Priorización de resiliencia sobre validaciones rígidas
+- Dockerización para estandarizar el entorno
+- Despliegues idempotentes
+- Eliminación de scripts frágiles
+- Uso controlado de AWS CLI
+- Priorización de resiliencia
+
+---
+
+## Objetivos de calidad
+
+- Cobertura de tests: >80%
+- Tiempo de respuesta: <200ms
+- Disponibilidad: 99.9%
 
 ---
 
