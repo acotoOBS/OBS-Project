@@ -97,6 +97,22 @@ Las extensiones están definidas en `.vscode/extensions.json`. Al abrir el proye
 
 ## Retos Encontrados y Soluciones
 
+---
+
+### Manejo de excepciones - exceptions.py
+
+Se implementó un módulo de excepciones personalizadas en app/utils/exceptions.py con el objetivo de estandarizar el manejo de errores en la API.
+
+#### Objetivo
+
+Centralizar la gestión de errores HTTP para:
+
+Mejorar la legibilidad del código
+Evitar duplicación de lógica
+Mantener respuestas consistentes en toda la aplicación
+
+---
+
 ### Manejo de credenciales AWS en scripts
 
 Problema:  

@@ -29,9 +29,10 @@ Practicar la gestión de cambios en Git sobre el repositorio OBS-Project mediant
 - Actualizar TASKS.md con cambios propios
 - Creación de archivo CONTRIBUTING.md para guía de contribuciones
 
-### Integrante 5
+### Susana Díez Gómez - SusanaDiez
+- Crear archivo utils/exceptions.py y aplicarlo como corresponda
 - Actualizar README.md
-- Agregar documentación sobre ...
+- Agregar documentación sobre utils/exceptions.py
 
 ## Archivos compartidos
 - README.md
