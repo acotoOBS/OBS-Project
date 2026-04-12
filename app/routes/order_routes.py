@@ -6,6 +6,7 @@ from app.database import SessionLocal
 from app.schemas.order_schema import OrderCreate, Order
 from app.services import order_service
 from app.schemas.order_schema import OrderStatusUpdate
+from app.utils.exceptions import NotFoundException
 
 router = APIRouter()
 
@@ -70,7 +71,7 @@ def update_order_status(
     order = order_service.update_order_status(db, order_id, status_update.status)
 
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise NotFoundException("Order not found")
 
     return order
 
