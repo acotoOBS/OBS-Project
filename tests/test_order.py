@@ -9,19 +9,17 @@ def test_health():
     assert response.status_code == 200
 
 
-def test_get_orders_by_price_range(client):
+def test_get_orders_by_price_range():
     # Crear órdenes
     client.post("/orders/", json={
         "customer_name": "Ana",
-        "product_name": "Laptop",
-        "quantity": 1,
+        "destination": "Buenos Aires",
         "price": 1000
     })
 
     client.post("/orders/", json={
         "customer_name": "Luis",
-        "product_name": "Mouse",
-        "quantity": 2,
+        "destination": "Córdoba",
         "price": 50
     })
 

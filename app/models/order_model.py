@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Float
 from datetime import datetime
 from app.database import Base
 
@@ -11,5 +11,6 @@ class Order(Base):
     tracking_number = Column(String, unique=True, index=True)
     customer_name = Column(String)
     destination = Column(String)
+    price = Column(Float)
     status = Column(String, default="CREATED")
     created_at = Column(DateTime, default=datetime.utcnow)

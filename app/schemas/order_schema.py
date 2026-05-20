@@ -6,12 +6,14 @@ from app.models.order_status import OrderStatus
 class OrderBase(BaseModel):
     customer_name: str
     destination: str
+    price: float
     status: OrderStatus
 
 
 class OrderCreate(BaseModel):
     customer_name: str
     destination: str
+    price: float
 
 
 class OrderStatusUpdate(BaseModel):
