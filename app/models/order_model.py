@@ -14,3 +14,6 @@ class Order(Base):
     price = Column(Float)
     status = Column(String, default="CREATED")
     created_at = Column(DateTime, default=datetime.utcnow)
+   
+    
+    variable_inutil = 42
