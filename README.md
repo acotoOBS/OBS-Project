@@ -293,4 +293,4 @@ Practicar la gestión de cambios en equipo, incluyendo:
 - Trabajo concurrente sobre los mismos archivos
 - Uso de ramas para desarrollo aislado
 - Resolución de conflictos en Git
-- Integración de cambios en una rama común
+- Integración de cambios en una rama común# Limpieza de rama por Ruben
