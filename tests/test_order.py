@@ -27,6 +27,6 @@ def test_get_orders_by_price_range(client):
 
     response = client.get("/orders/filter/by-price?min_price=10&max_price=200")
 
-    assert response.status_code == 500
+    assert response.status_code == 200
     data = response.json()
     assert len(data) >= 1
