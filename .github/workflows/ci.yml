@@ -13,7 +13,7 @@ on:
   
 jobs:
   test-and-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Descargar código
@@ -31,6 +31,7 @@ jobs:
 
       - name: Ejecutar tests
         run: |
+          exit 1  # Provoca error para probar el pipeline
           python -m pytest
 
       - name: Construir imagen Docker usando el Dockerfile del proyecto
