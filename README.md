@@ -190,7 +190,7 @@ Aunque el proyecto cumple con los requerimientos funcionales, se han identificad
 ### Testing y Calidad
 - Expandir cobertura de tests (CRUD completo, casos de error, validaciones)
 - Implementar fixtures y mocks para tests más robustos
-- Configurar reporte de coverage de código
+- Configurar reporte de coverage de código.
 
 ### Observabilidad
 - Implementar logging estructurado (utilizar `app/utils/logger.py`)
