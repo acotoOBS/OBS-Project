@@ -11,6 +11,7 @@ def create_order(db: Session, order: OrderCreate):
         tracking_number=generate_tracking_number(),
         customer_name=order.customer_name,
         destination=order.destination,
+        price=order.price,
         status=OrderStatus.CREATED.value,
     )
 

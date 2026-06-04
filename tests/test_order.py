@@ -10,18 +10,15 @@ def test_health():
 
 
 def test_get_orders_by_price_range(client):
-    # Crear órdenes
     client.post("/orders/", json={
         "customer_name": "Ana",
-        "product_name": "Laptop",
-        "quantity": 1,
+        "destination": "Bogotá",
         "price": 1000
     })
 
     client.post("/orders/", json={
         "customer_name": "Luis",
-        "product_name": "Mouse",
-        "quantity": 2,
+        "destination": "Medellín",
         "price": 50
     })
 
