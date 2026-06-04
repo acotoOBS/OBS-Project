@@ -47,3 +47,49 @@ jobs:
       - name: Construir imagen Docker usando el Dockerfile del proyecto
         run: | 
           docker build -t actividad-pipeline-api .
+
+      - name: Desplegar en Render
+        if: github.ref_name == 'staging' || github.ref_name == 'main'
+        env:
+          RENDER_DEPLOY_HOOK_STAGING: ${{ secrets.RENDER_DEPLOY_HOOK_STAGING }}
+          RENDER_DEPLOY_HOOK_PROD: ${{ secrets.RENDER_DEPLOY_HOOK_PROD }}
+        run: |
+          if [ "${{ github.ref_name }}" = "staging" ]; then
+            echo "Preparando despliegue a STAGING..."
+            DEPLOY_HOOK="$RENDER_DEPLOY_HOOK_STAGING"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            echo "Preparando despliegue a PRODUCCIÓN..."
+            DEPLOY_HOOK="$RENDER_DEPLOY_HOOK_PROD"
+          fi
+
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::warning::No está configurado el Deploy Hook de Render. Se omite el despliegue."
+            exit 0
+          fi
+
+          curl -fsS "$DEPLOY_HOOK"
+          echo "Deploy solicitado correctamente a Render."
+
+      - name: Verificación funcional del entorno desplegado
+        if: github.ref_name == 'staging' || github.ref_name == 'main'
+        run: |
+          if [ "${{ github.ref_name }}" = "staging" ]; then
+            URL="https://obs-project-api-staging.onrender.com/health"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            URL="https://obs-project-api.onrender.com/health"
+          fi
+
+          echo "Verificando endpoint: $URL"
+
+          for i in {1..20}; do
+            if curl -fsS "$URL"; then
+              echo "La aplicación responde correctamente."
+              exit 0
+            fi
+
+            echo "La aplicación todavía no responde. Reintentando en 15 segundos..."
+            sleep 15
+          done
+
+          echo "La aplicación no respondió correctamente."
+          exit 1
