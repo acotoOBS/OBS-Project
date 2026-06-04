@@ -1,6 +1,6 @@
 # Prueba Técnica – API de Gestión de Pedidos
 
-## Descripción
+## Descripción.
 
 Este proyecto consiste en una API desarrollada con FastAPI para la gestión de pedidos, incluyendo operaciones básicas como creación, consulta y actualización.
 
