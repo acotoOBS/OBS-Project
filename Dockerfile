@@ -35,7 +35,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY app ./app
 COPY scripts ./scripts
-COPY orders.db ./orders.db
 COPY .env.example ./.env.example
 COPY README.md ./README.md
 
