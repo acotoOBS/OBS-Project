@@ -93,3 +93,6 @@ jobs:
 
           echo "La aplicación no respondió correctamente."
           exit 1
+          
+      - name: Mensaje de confirmación final
+        run: echo "Despliegue configurado, automatizado y verificado por Rubén"
